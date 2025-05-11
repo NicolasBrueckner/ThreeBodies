@@ -12,6 +12,7 @@ public class ThreeBodyAnimator : MonoBehaviour
 	[ Header( "Assign in Inspector" ) ]
 	public GameObject body0, body1, body2;
 
+	public float playbackSpeed = 1.0f;
 	public string csvFileName = "trajectory.csv";
 
 	private List<float> times;
@@ -37,7 +38,7 @@ public class ThreeBodyAnimator : MonoBehaviour
 
 		for( int i = 1; i < lines.Length; i++ ) // skip header
 		{
-			string[] cols = lines[ i ].Split( ',' );
+			string[] cols = lines[ i ].Split( ';' );
 			float t = float.Parse( cols[ 0 ], CultureInfo.InvariantCulture );
 			float x0 = float.Parse( cols[ 1 ], CultureInfo.InvariantCulture );
 			float y0 = float.Parse( cols[ 2 ], CultureInfo.InvariantCulture );
@@ -57,13 +58,30 @@ public class ThreeBodyAnimator : MonoBehaviour
 
 	private void Update()
 	{
-		if( _i >= times.Count )
-			return;
+		/*if( !Input.GetMouseButtonDown( 0 ) )
+			return;*/
 
-		body0.transform.position = new( pos0[ _i ].x, pos0[ _i ].y, 0 );
-		body1.transform.position = new( pos1[ _i ].x, pos1[ _i ].y, 0 );
-		body2.transform.position = new( pos2[ _i ].x, pos2[ _i ].y, 0 );
+		// 1) Compute your “virtual” time within the orbit:
+		float playTime = Time.time * playbackSpeed % times[ times.Count - 1 ];
 
-		_i++;
+		// 2) Find i0 via binary‐search and i1 = i0+1
+		int i0 = times.BinarySearch( playTime );
+		if( i0 < 0 ) i0 = ~i0 - 1;
+		i0 = Mathf.Clamp( i0, 0, times.Count - 2 );
+		int i1 = i0 + 1;
+
+		// 3) Compute alpha
+		float t0 = times[ i0 ], t1 = times[ i1 ];
+		float alpha = ( playTime - t0 ) / ( t1 - t0 );
+
+		// 4) Interpolate each body
+		Vector2 p0 = Vector2.Lerp( pos0[ i0 ], pos0[ i1 ], alpha );
+		Vector2 p1 = Vector2.Lerp( pos1[ i0 ], pos1[ i1 ], alpha );
+		Vector2 p2 = Vector2.Lerp( pos2[ i0 ], pos2[ i1 ], alpha );
+
+		// 5) Assign transforms
+		body0.transform.position = new Vector3( p0.x, p0.y, 0 ) * 10;
+		body1.transform.position = new Vector3( p1.x, p1.y, 0 ) * 10;
+		body2.transform.position = new Vector3( p2.x, p2.y, 0 ) * 10;
 	}
 }
