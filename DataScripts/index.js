@@ -252,7 +252,9 @@ function trajectory() {
 }
 
 if (require.main === module) {
-  GenerateBinary_PerSequence();
+  //GenerateBinary_PerSequence();
+  //GenerateAdditionalBinary_PerSequence();
+  ReadAdditionalInfo('./additional_binary_sequence/additional-Li__Liao_Equal_Mass-IC_ic.bin');
   /*
   CreateHTMLFromFirstOrbitBinary(`Suvakov`, `IVa - Moth I`);
   CreateHTMLFromFirstOrbitBinary(`Suvakov`, `I - Butterfly I`);
@@ -354,6 +356,80 @@ function GenerateBinary_PerSequence() {
       });
     }
   }
+}
+
+function GenerateAdditionalBinary_PerSequence() {
+  const outDir = path.join(__dirname, 'additional_binary_sequence');
+  fs.mkdirSync(outDir, { recursive: true });
+
+  for (const [groupName, sequences] of Object.entries(conditions)) {
+    for (const [sequenceName, orbits] of Object.entries(sequences)) {
+      console.log(`Writing additional binary for ${groupName} / ${sequenceName}…`);
+
+      const filename = `additional-${safe(groupName)}-${safe(sequenceName)}.bin`;
+      const ws = fs.createWriteStream(path.join(outDir, filename));
+
+      for (const [orbitName, ic] of Object.entries(orbits)) {
+        const additionalInfo = {
+          gN: groupName,
+          sN: sequenceName,
+          oN: orbitName,
+          year: ic.year,
+          G: ic.G,
+          T: ic.T,
+          E: ic.E,
+          L: ic.L,
+        };
+
+        if(orbitName === 'Broucke A 1')
+          console.log(additionalInfo);
+
+        const stringKeys = ['gN', 'sN', 'oN', 'year', 'G'];
+        const parts = [];
+
+        for(const key of stringKeys) {
+          const s = (additionalInfo[key] || '');
+          const strBuf = Buffer.from(s, 'utf8');
+          const lenBuf = Buffer.allocUnsafe(4);
+          lenBuf.writeUInt32LE(strBuf.length, 0);
+          parts.push(lenBuf, strBuf);
+        }
+
+        const numBuf = Buffer.allocUnsafe(4+4+4);
+        let offs = 0;
+        numBuf.writeFloatLE(additionalInfo.T, offs); offs+=4;
+        numBuf.writeFloatLE(additionalInfo.E, offs); offs+=4;
+        numBuf.writeFloatLE(additionalInfo.L, offs);
+        parts.push(numBuf);
+
+        const buf = Buffer.concat(parts);
+        ws.write(buf);
+      }
+
+      ws.end(() => {
+        console.log(` → Finished ${filename}`);
+      });
+    }
+  }
+}
+
+function ReadAdditionalInfo(filePath) {
+  let offs = 0;
+  const out = {};
+  const buf = fs.readFileSync(filePath)
+
+  for (const key of ['gN','sN','oN','year','G']) {
+    const strLen = buf.readUInt32LE(offs);
+    offs += 4;
+    out[key] = buf.toString('utf8', offs, offs + strLen);
+    offs += strLen;
+  }
+
+  out.T = buf.readFloatLE(offs); offs += 4;
+  out.E = buf.readFloatLE(offs); offs += 4;
+  out.L = buf.readFloatLE(offs); offs += 4;
+
+  console.log(out);
 }
 
 function CreateHTMLFromOrbitBinary(group, sequence, orbitIndex) {
