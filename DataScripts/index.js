@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const sequences = require('./initialconditions.js');
+const conditions = require('./initialconditions.js');
 const EPSILON = 2.220446049250313e-16;
+const safe = s => s.replace(/\s+/g,'_').replace(/[^\w_-]/g,'');
 
 //#region helpers
 function minMag(a, b) {
@@ -184,9 +185,9 @@ function ode45(outputState, inputState, f, options) {
 //attractions
 function planarThreeBodyDerivative(yp, y, t) {
   let dx, dy, r3, fx, fy
-  let m0 = initialConditions.M[0]
-  let m1 = initialConditions.M[1]
-  let m2 = initialConditions.M[2]
+  let m0 = initialConditions.m[0]
+  let m1 = initialConditions.m[1]
+  let m2 = initialConditions.m[2]
 
   // d(position)/dt = velocity
   yp[0] = y[2]; yp[1] = y[3];
@@ -227,15 +228,15 @@ function planarThreeBodyDerivative(yp, y, t) {
 //trajectory
 function trajectory() {
   let config = {
-    tolerance: initialConditions.tolerance || 1e-9,
-    tLimit: initialConditions.period
+    tolerance: initialConditions.tolerance,
+    tLimit: initialConditions.tEnd
   };
 
   let state = { t: 0, y: initialConditions.y0.slice() };
   let result = { position: [], t: [] };
   
   function storeStep(t, y) {
-    result.position.push(y[0], y[1], t, y[4], y[5], t, y[8], y[9], t);
+    result.position.push(y[0], y[1], y[4], y[5], y[8], y[9]);
     result.t.push(t);
   }
 
@@ -251,74 +252,177 @@ function trajectory() {
 }
 
 if (require.main === module) {
-  sequences.forEach(({sequence, orbits}) => {
-    orbits.forEach(orbit => {
-      initialConditions = {
-        M: orbit.M || [1.0, 1.0, 1.0],
-        tolerance: 1e-9,
-        period: orbit.T,
-        y0: [
-          orbit.x[0][0], orbit.x[0][1], orbit.v[0][0], orbit.v[0][1],
-          orbit.x[1][0], orbit.x[1][1], orbit.v[1][0], orbit.v[1][1],
-          orbit.x[2][0], orbit.x[2][1], orbit.v[2][0], orbit.v[2][1]
-        ]
-      };
+  GenerateBinary_PerSequence();
+  /*
+  CreateHTMLFromFirstOrbitBinary(`Suvakov`, `IVa - Moth I`);
+  CreateHTMLFromFirstOrbitBinary(`Suvakov`, `I - Butterfly I`);
+  CreateHTMLFromFirstOrbitBinary(`Suvakov`, `II - Dragonfly`);
+  CreateHTMLFromFirstOrbitBinary(`Suvakov`, `VIII - Other`);
+  */
+}
 
-    const traj = trajectory();
-
-    //#region csv
-    const header = ['t', 'x0','y0', 'x1','y1', 'x2','y2'].join(';') + '\n';
-    const body = traj.t.map((t,i) => {
-      const base = i * 9;
-      const x0 = traj.position[base + 0];
-      const y0 = traj.position[base + 1];
-      const x1 = traj.position[base + 3];
-      const y1 = traj.position[base + 4];
-      const x2 = traj.position[base + 6];
-      const y2 = traj.position[base + 7];
-      return [t, x0, y0, x1, y1, x2, y2].join(';');
-    }).join('\n');
-    const safe = str => str.replace(/\s+/g,'_').replace(/[^\w_-]/g,'');
-    const csvFileName = `${safe(sequence)}-${safe(orbit.name)}.csv`;
-    const csvOutPath  = path.join(__dirname, 'csvoutput', csvFileName);
-    fs.writeFileSync(csvOutPath, header + body);
-    //#endregion
-
-    //#region html
-    const html = `<!DOCTYPE html>
-    <html><head><meta charset="utf-8" /><script src="https://cdn.plot.ly/plotly-latest.min.js"></script></head>
-    <body>
-      <div id="plot" style="width:100%;height:100vh;"></div>
-      <script>
-        const result = ${JSON.stringify(traj)};
-        const x0 = [], y0 = [], x1 = [], y1 = [], x2 = [], y2 = [];
-        for (let i = 0; i < result.position.length; i += 3) {
-          x0.push(result.position[i+0]);  y0.push(result.position[i+1]);
-          x1.push(result.position[i+3]);  y1.push(result.position[i+4]);
-          x2.push(result.position[i+6]);  y2.push(result.position[i+7]);
-        }
-        const N = x0.length;
-    
-        const traces = [
-          { x: x0, y: y0, mode: 'markers', name: 'Body 0' },
-          { x: x1, y: y1, mode: 'markers', name: 'Body 1' },
-          { x: x2, y: y2, mode: 'markers', name: 'Body 2' }
-        ];
-    
-        Plotly.newPlot('plot', traces, {
-          title: 'Planar Three-Body Orbits (Labeled Points)',
-          xaxis: { title: 'x' },
-          yaxis: { title: 'y', scaleanchor: 'x', scaleratio: 1 }
-        },
-        {
-          scrollZoom: true
+function CreateHTMLFromTrajectories(trajectories, group, sequence, orbit)
+{
+  const htmlName = `${safe(group)}-${safe(sequence)}-${safe(orbit)}.html`;
+  const html = `<!DOCTYPE html>
+  <html><head><meta charset="utf-8">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <title>${group} › ${sequence} › ${orbit}</title>
+  </head>
+  <body>
+  <div id="plot" style="width:100%;height:100vh;"></div>
+  <script>
+  const result = ${JSON.stringify(trajectories)};
+  const x0 = [], y0 = [], x1 = [], y1 = [], x2 = [], y2 = [];
+  for (let i = 0; i < result.position.length; i += 3) {
+    x0.push(result.position[i+0]);  y0.push(result.position[i+1]);
+    x1.push(result.position[i+3]);  y1.push(result.position[i+4]);
+    x2.push(result.position[i+6]);  y2.push(result.position[i+7]);
+    }
+  Plotly.newPlot('plot', [
+    { x: x0, y: y0, mode: 'markers', name: 'Body 0' },
+    { x: x1, y: y1, mode: 'markers', name: 'Body 1' },
+    { x: x2, y: y2, mode: 'markers', name: 'Body 2' }
+    ], {
+      title: '${group} › ${sequence} › ${orbit}',
+      xaxis: { title: 'x' },
+      yaxis: { title: 'y', scaleanchor: 'x', scaleratio: 1 }
+      }, {
+        scrollZoom: true
         });
-      </script>
-    </body></html>`;
-    const htmlFileName = `${safe(sequence)}-${safe(orbit.name)}.html`;
-    const htmlOutPath = path.join(__dirname, 'htmloutput', htmlFileName);
-    fs.writeFileSync(htmlOutPath, html);
-    //#endregion
-    });
-  });
+        </script>
+        </body>
+        </html>`;
+        fs.writeFileSync(path.join(__dirname,'htmloutput',htmlName), html);
+        console.log(`Wrote HTML: ${htmlName}`);
+}
+
+function GenerateBinary_PerSequence() {
+  const outDir = path.join(__dirname, 'binary_sequence');
+  fs.mkdirSync(outDir, { recursive: true });
+
+  for (const [groupName, sequences] of Object.entries(conditions)) {
+    for (const [sequenceName, orbits] of Object.entries(sequences)) {
+      console.log(`Writing binary for ${groupName} / ${sequenceName}…`);
+
+      const filename = `${safe(groupName)}-${safe(sequenceName)}.bin`;
+      const ws = fs.createWriteStream(path.join(outDir, filename));
+
+      for (const [orbitName, ic] of Object.entries(orbits)) {
+        initialConditions = {
+          m:         ic.m         || [1,1,1],
+          tolerance: ic.tolerance || 1e-9,
+          tEnd:    ic.T,
+          y0: [
+            ic.x[0][0], ic.x[0][1], ic.v[0][0], ic.v[0][1],
+            ic.x[1][0], ic.x[1][1], ic.v[1][0], ic.v[1][1],
+            ic.x[2][0], ic.x[2][1], ic.v[2][0], ic.v[2][1],
+          ]
+        };
+        const fullTraj = trajectory();
+        const {t: Td, position: Pd} = decimateTrajectories(fullTraj, 0.2);
+
+        const t32 = Float32Array.from(Td);
+        const pos32 = Float32Array.from(Pd);
+
+        const M = t32.length;
+
+        const buf = Buffer.allocUnsafe(4 + 4*M + 4*6*M);
+        let offs = 0;
+
+        buf.writeUInt32LE(M, offs);
+        offs += 4;
+
+        for (let i = 0; i < M; i++, offs += 4) {
+          buf.writeFloatLE(t32[i], offs);
+        }
+
+        for (let i = 0; i < M; i++) {
+          const b = i*6;
+          buf.writeFloatLE(pos32[b+0], offs); offs += 4;
+          buf.writeFloatLE(pos32[b+1], offs); offs += 4;
+          buf.writeFloatLE(pos32[b+2], offs); offs += 4;
+          buf.writeFloatLE(pos32[b+3], offs); offs += 4;
+          buf.writeFloatLE(pos32[b+4], offs); offs += 4;
+          buf.writeFloatLE(pos32[b+5], offs); offs += 4;
+        }
+        ws.write(buf);
+      }
+
+      ws.end(() => {
+        console.log(` → Finished ${filename}`);
+      });
+    }
+  }
+}
+
+function CreateHTMLFromOrbitBinary(group, sequence, orbitIndex) {
+  const binPath = path.join(__dirname, 'binary_sequence', `${safe(group)}-${safe(sequence)}.bin`);
+  const buf = fs.readFileSync(binPath);
+
+  const trajectories = ReadOrbitFromBinary(buf, orbitIndex);
+  CreateHTMLFromTrajectories(trajectories, group, sequence, `orbit ${orbitIndex}`);
+}
+
+function ReadOrbitFromBinary(buf, orbitIndex)
+{
+  let offs = 0;
+  
+  for(let idx = 0; idx < orbitIndex; idx++) {
+      const M = buf.readUInt32LE(offs);
+      const step = M + 4*M + 4*6*M;
+      offs += step;
+  }
+    
+  const M = buf.readUInt32LE(offs);
+  offs += 4;
+  
+  const t = new Array(M);
+  for (let i = 0; i < M; i++, offs += 4) {
+    t[i] = buf.readFloatLE(offs);
+  }
+  
+  const position = new Array(6 * M);
+  for (let i = 0; i < M; i++) {
+    const base  = i * 6;
+    const x0    = buf.readFloatLE(offs); offs += 4;
+    const y0    = buf.readFloatLE(offs); offs += 4;
+    const x1    = buf.readFloatLE(offs); offs += 4;
+    const y1    = buf.readFloatLE(offs); offs += 4;
+    const x2    = buf.readFloatLE(offs); offs += 4;
+    const y2    = buf.readFloatLE(offs); offs += 4;
+  
+    position[base + 0] = x0;
+    position[base + 1] = y0;
+    position[base + 2] = x1;
+    position[base + 3] = y1;
+    position[base + 4] = x2;
+    position[base + 5] = y2;
+  }
+  
+  return { t, position };
+}
+
+function decimateTrajectories(traj, p) {
+  const N = traj.t.length;
+  if (p >= 1 || N === 0)
+    return { t: traj.t.slice(), position: traj.position.slice() };
+  
+  const M = Math.max(1, Math.floor(N * p));
+  const step = N / M; 
+
+  const t2   = new Array(M);
+  const pos2 = new Array(M * 6);
+
+  for (let j = 0; j < M; j++) {
+    const i = Math.floor(j * step);
+    t2[j] = traj.t[i];
+
+    const srcBase = i * 6;
+    const dstBase = j * 6;
+    for (let k = 0; k < 6; k++)
+      pos2[dstBase + k] = traj.position[srcBase + k];
+  }
+
+  return { t: t2, position: pos2 };
 }

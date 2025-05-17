@@ -1,0 +1,222 @@
+module.exports = {
+"III.3.A.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=0",
+"year": "2012",
+"G": "aBABababABAb",
+"T": 17.32881,
+"E": -1.429011,
+"L": 0,
+"ref": "f",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.513938, 0.304736 ], [ 0.513938, 0.304736 ], [ -1.027876, -0.609472 ] ]
+},
+"III.3.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=1",
+"year": "2012",
+"G": "abABAbaBABab",
+"T": 10.963252,
+"E": -1.939048,
+"L": 0,
+"ref": "f",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.282699, 0.327209 ], [ 0.282699, 0.327209 ], [ -0.565398, -0.654418 ] ]
+},
+"III.9.A.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=2",
+"year": "2015",
+"G": "aBABababABAbaBABababABAbaBABababABAb",
+"T": 50.407145,
+"E": -1.458708,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.51315, 0.289437 ], [ 0.51315, 0.289437 ], [ -1.0263, -0.578874 ] ]
+},
+"III.9.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=3",
+"year": "2015",
+"G": "abABAbaBABababABAbaBABababABAbaBABab",
+"T": 32.84084,
+"E": -1.940977,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.276237, 0.331714 ], [ 0.276237, 0.331714 ], [ -0.552474, -0.663428 ] ]
+},
+"III.12.A.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=4",
+"year": "2012",
+"G": "aBABabaBABabaBABabaBABababABAbabABAbabABAbabABAb",
+"T": 55.789329,
+"E": -1.651418,
+"L": 0,
+"ref": "f",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.416822, 0.330333 ], [ 0.416822, 0.330333 ], [ -0.833644, -0.660666 ] ]
+},
+"III.12.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=5",
+"year": "2012",
+"G": "abABAbabABAbabABAbabABAbaBABabaBABabaBABabaBABab",
+"T": 54.208001,
+"E": -1.68338,
+"L": 0,
+"ref": "f",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.417343, 0.3131 ], [ 0.417343, 0.3131 ], [ -0.834686, -0.6262 ] ]
+},
+"III.13.A.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=6",
+"year": "2014",
+"G": "aBABabaBABabaBABabaBABabaBABAbabABAbabABAbabABAbabABAb",
+"T": 63.406504,
+"E": -1.640234,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.416444, 0.336397 ], [ 0.416444, 0.336397 ], [ -0.832888, -0.672794 ] ]
+},
+"III.13.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=7",
+"year": "2014",
+"G": "abABAbabABAbabABAbabABAbabABabaBABabaBABabaBABabaBABab",
+"T": 60.150751,
+"E": -1.698899,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.415819, 0.306804 ], [ 0.415819, 0.306804 ], [ -0.831638, -0.613608 ] ]
+},
+"III.15.A.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=8",
+"year": "2014",
+"G": "aBABabaBABabaBABabaBABabaBABababABAbabABAbabABAbabABAbabABAb",
+"T": 70.492561,
+"E": -1.639612,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.414396, 0.339223 ], [ 0.414396, 0.339223 ], [ -0.828792, -0.678446 ] ]
+},
+"III.15.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=9",
+"year": "2014",
+"G": "abABAbabABAbabABAbabABAbabABAbaBABabaBABabaBABabaBABabaBABab",
+"T": 66.751098,
+"E": -1.700321,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.417701, 0.303455 ], [ 0.417701, 0.303455 ], [ -0.835402, -0.60691 ] ]
+},
+"III.15.B.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=10",
+"year": "2015",
+"G": "aBABababABAbaBABababABAbaBABababABAbaBABababABAbaBABababABAb",
+"T": 85.129064,
+"E": -1.445915,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.513063, 0.296863 ], [ 0.513063, 0.296863 ], [ -1.026126, -0.593726 ] ]
+},
+"III.15.B.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=11",
+"year": "2015",
+"G": "abABAbaBABababABAbaBABababABAbaBABababABAbaBABababABAbaBABab",
+"T": 54.639089,
+"E": -1.943237,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.282036, 0.325643 ], [ 0.282036, 0.325643 ], [ -0.564072, -0.651286 ] ]
+},
+"III.15.C.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=12",
+"year": "2015",
+"G": "aBABababABAbaBABababABAbaBABababABAbaBABababABAbaBABababABAb",
+"T": 88.440089,
+"E": -1.409598,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.516228, 0.311409 ], [ 0.516228, 0.311409 ], [ -1.032456, -0.622818 ] ]
+},
+"III.15.C.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=13",
+"year": "2015",
+"G": "abABAbaBABababABAbaBABababABAbaBABababABAbaBABababABAbaBABab",
+"T": 54.820022,
+"E": -1.938959,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.280396, 0.329229 ], [ 0.280396, 0.329229 ], [ -0.560792, -0.658458 ] ]
+},
+"III.16.A.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=14",
+"year": "2015",
+"G": "aBABabaBABabaBABabaBABabaBABabaBABAbabABAbabABAbabABAbabABAbabABAb",
+"T": 80.146699,
+"E": -1.60391,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.427659, 0.3403 ], [ 0.427659, 0.3403 ], [ -0.855318, -0.6806 ] ]
+},
+"III.16.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=15",
+"year": "2014",
+"G": "abABAbabABAbabABAbabABAbabABAbabABabaBABabaBABabaBABabaBABabaBABab",
+"T": 74.845173,
+"E": -1.678776,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.429098, 0.299359 ], [ 0.429098, 0.299359 ], [ -0.858196, -0.598718 ] ]
+},
+"III.18.A.α": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=16",
+"year": "2014",
+"G": "aBABabaBABabaBABabaBABabaBABabaBABababABAbabABAbabABAbabABAbabABAbabABAb",
+"T": 84.855117,
+"E": -1.636235,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.41372, 0.341698 ], [ 0.41372, 0.341698 ], [ -0.82744, -0.683396 ] ]
+},
+"III.18.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=17",
+"year": "2014",
+"G": "abABAbabABAbabABAbabABAbabABAbabABAbaBABabaBABabaBABabaBABabaBABabaBABab",
+"T": 79.283684,
+"E": -1.712019,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.414643, 0.301216 ], [ 0.414643, 0.301216 ], [ -0.829286, -0.602432 ] ]
+},
+"III.19.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=18",
+"year": "2015",
+"G": "abABAbabABAbabABAbabABAbabABAbabABAbabABabaBABabaBABabaBABabaBABabaBABabaBABab",
+"T": 86.360447,
+"E": -1.70578,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.418091, 0.2999 ], [ 0.418091, 0.2999 ], [ -0.836182, -0.5998 ] ]
+},
+"III.21.A.β": {
+"url": "http://three-body.ipb.ac.rs/sIII_sol.php?id=19",
+"year": "2015",
+"G": "abABAbabABAbabABAbabABAbabABAbabABAbabABAbaBABabaBABabaBABabaBABabaBABabaBABabaBABab",
+"T": 92.981286,
+"E": -1.706108,
+"L": 0,
+"ref": "t",
+"x": [ [ -1, 0 ], [ 1, 0 ], [ 0, 0 ] ],
+"v": [ [ 0.418259, 0.299482 ], [ 0.418259, 0.299482 ], [ -0.836518, -0.598964 ] ]
+}
+}

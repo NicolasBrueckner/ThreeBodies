@@ -1,97 +1,101 @@
-module.exports = [
-    {
-        sequence: "Broucke",
-        orbits: [
-            {
-                "name": "Broucke A 1",
-                "year": "1975",
-                "G": "a",
-                "T": 6.283213,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ -0.9892620043, 0 ], [ 2.2096177241, 0 ], [ -1.2203557197, 0 ] ],
-                "v": [ [ 0, 1.9169244185 ], [ 0, 0.1910268738 ], [ 0, -2.1079512924 ] ]
-            },
-            {
-                "name": "Broucke A 2",
-                "year": "1975",
-                "G": "a",
-                "T": 7.702408,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ 0.336130095, 0 ], [ 0.7699893804, 0 ], [ -1.1061194753, 0 ] ],
-                "v": [ [ 0, 1.532431537 ], [ 0, -0.6287350978 ], [ 0, -0.9036964391 ] ]
-            },
-            {
-                "name": "Broucke A 3",
-                "year": "1975",
-                "G": "a",
-                "T": 7.910268,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ 0.3149337497, 0 ], [ 0.812382071, 0 ], [ -1.1273158206, 0 ] ],
-                "v": [ [ 0, 1.4601869417 ], [ 0, -0.5628292375 ], [ 0, -0.8973577042 ] ]
-            },
-            {
-                "name": "Broucke A 4",
-                "year": "1975",
-                "G": "a",
-                "T": 8.211617,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ 0.2843198916, 0 ], [ 0.8736097872, 0 ], [ -1.1579296788, 0 ] ],
-                "v": [ [ 0, 1.377417957 ], [ 0, -0.4884226932 ], [ 0, -0.8889952638 ] ]
-            },
-            {
-                "name": "Broucke A 5",
-                "year": "1975",
-                "G": "a",
-                "T": 8.689105,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ 0.2355245585, 0 ], [ 0.9712004534, 0 ], [ -1.2067250118, 0 ] ],
-                "v": [ [ 0, 1.2795329643 ], [ 0, -0.4021329019 ], [ 0, -0.8774000623 ] ]
-            },
-            {
-                "name": "Broucke A 6",
-                "year": "1975",
-                "G": "a",
-                "T": 9.593323,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ 0.1432778606, 0 ], [ 1.1556938491, 0 ], [ -1.2989717097, 0 ] ],
-                "v": [ [ 0, 1.1577475241 ], [ 0, -0.2974667752 ], [ 0, -0.8602807489 ] ]
-            },
-            {
-                "name": "Broucke A 7",
-                "year": "1975",
-                "G": "a",
-                "T": 12.055859,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ -0.1095519101, 0 ], [ 1.6613533905, 0 ], [ -1.5518014804, 0 ] ],
-                "v": [ [ 0, 0.9913358338 ], [ 0, -0.1569959746 ], [ 0, -0.8343398592 ] ]
-            },
-            {
-                "name": "Broucke A 8",
-                "year": "1975",
-                "G": "a",
-                "T": 18.118189,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ 0.1979259967, 0 ], [ 1.0463975768, 0 ], [ -1.2443235736, 0 ] ],
-                "v": [ [ 0, 1.2224733132 ], [ 0, -0.3527351133 ], [ 0, -0.8697381999 ] ]
-            },
-            {
-                "name": "Broucke A 9",
-                "T": 20.897689,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ 0.0557080334, 0 ], [ 1.3308335036, 0 ], [ -1.386541537, 0 ] ],
-                "v": [ [ 0, 1.0824099428 ], [ 0, -0.2339059386 ], [ 0, -0.8485040042 ] ]
-            },
-            {
-                "name": "Broucke A 10",
-                "year": "1975",
-                "G": "a",
-                "T": 32.610953,
-                "M": [1.0, 1.0, 1.0],
-                "x": [ [ -0.5426216182, 0 ], [ 2.5274928067, 0 ], [ -1.9848711885, 0 ] ],
-                "v": [ [ 0, 0.8750200467 ], [ 0, -0.0526955841 ], [ 0, -0.8223244626 ] ]
-            },
+const Broucke = require("./sequencemodules/Broucke");
+const Henon = require("./sequencemodules/Henon");
+const I_butterfly = require("./sequencemodules/_I_butterfly");
+const II_dragonfly = require("./sequencemodules/_II_dragonfly");
+const III_yin_yang = require("./sequencemodules/_III_yin_yang");
+const IVa_moth = require("./sequencemodules/_IVa_moth");
+const IVb_butterfly = require("./sequencemodules/_IVb_butterfly");
+const IVc_moth = require("./sequencemodules/_IVc_moth");
+const V_figure_8 = require("./sequencemodules/_V_figure_8");
+const VI_yarn = require("./sequencemodules/_VI_yarn");
+const VIIa_moth = require("./sequencemodules/_VIIa_moth");
+const VIIb_moth = require("./sequencemodules/_VIIb_moth");
+const VIII_other = require("./sequencemodules/_VIII_other");
+const Sheen = require("./sequencemodules/_Sheen");
+const IA_ic_equalMass = require("./sequencemodules/_IA_ic_equalMass");
+const IB_ic_equalMass = require("./sequencemodules/_IB_ic_equalMass");
+const IC_ic_equalMass = require("./sequencemodules/_IC_ic_equalMass");
+const IA_ic = require("./sequencemodules/_IA_ic");
+const IB_ic = require("./sequencemodules/_IB_ic");
+const IC_ic = require("./sequencemodules/_IC_ic");
+const IIA_ic = require("./sequencemodules/_IIA_ic");
+const IIB_ic = require("./sequencemodules/_IIB_ic");
+const IIC_ic = require("./sequencemodules/_IIC_ic");
+const IID_ic = require("./sequencemodules/_IID_ic");
+const Freefall = require("./sequencemodules/_Freefall");
+const figureEight = require("./sequencemodules/_figureEight");
+const hristov2_src = require("./sequencemodules/_hristov2_src");
 
-        ]
+function Hristov2()
+{
+    const orbits = {};
+    for (let [name, ic] of Object.entries(hristov2_src)) {
+        ic.x = [[-1, 0], [1, 0], [0, 0]];
+        ic.ref = "hristov1";
+        ic.L = 0;
+        ic.url = "https://github.com/rgoranova/3body";
+        ic.year = "2021";
+        ic.v[1] = ic.v[0].slice();
+        ic.v[2] = ic.v[0].slice().map((x) => -x * 2);
 
+        orbits[`${name} ${ic.old ? "(old)" : ""}`] = ic;
     }
-]
+    return orbits;
+}
+
+function FigureEight()
+{
+    const orbits = {};
+    for (let [name, ic] of Object.entries(figureEight)) {
+        ic.x = [[-1, 0], [1, 0], [0, 0]];
+        ic.ref = "fe";
+        ic.L = 0;
+        ic.url = "http://db2.fmi.uni-sofia.bg/3body/";
+        ic.year = "2022";
+        ic.v[1] = ic.v[0].slice();
+        ic.v[2] = ic.v[0].slice().map((x) => -x * 2);
+
+        orbits[`${name} ${ic.old ? "(old)" : ""}`] = ic;
+    }
+    return orbits;
+}
+
+module.exports = {
+"Šuvakov": {
+    "I - Butterfly I": I_butterfly,
+    "II - Dragonfly": II_dragonfly,
+    "III - Yin Yang": III_yin_yang,
+    "IVa - Moth I": IVa_moth,
+    "IVb - Butterfly III": IVb_butterfly,
+    "IVc - Moth III": IVc_moth,
+    "V - Figure 8": V_figure_8,
+    "VI - Yarn": VI_yarn,
+    "VIIa - Moth": VIIa_moth,
+    "VIIb - Moth": VIIb_moth,
+    "VIII - Other": VIII_other,
+    "Broucke": Broucke,
+    "Sheen": Sheen,
+    "Henon": Henon
+  },
+  "Li & Liao Equal Mass": {
+    "I.A i.c.": IA_ic_equalMass,
+    "I.B i.c.": IB_ic_equalMass,
+    "I.C i.c.": IC_ic_equalMass
+  },
+  "Li & Liao Unequal Mass": {
+    "I.A i.c.": IA_ic,
+    "I.B i.c.": IB_ic,
+    "I.C i.c.": IC_ic,
+    "II.A i.c.": IIA_ic,
+    "II.B i.c.": IIB_ic,
+    "II.C i.c.": IIC_ic,
+    "II.D i.c.": IID_ic
+  },
+  "Li & Liao Free-fall": {
+    "Free Fall": Freefall
+  },
+  "Hristov et al.": {
+    "Set One": Hristov2(),
+    "Figure Eight": FigureEight()
+  }
+}
