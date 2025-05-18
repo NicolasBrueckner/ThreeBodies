@@ -1,14 +1,16 @@
+using System.Runtime.InteropServices;
 using UnityEngine;
 
+[StructLayout( LayoutKind.Sequential )]
 public struct OrbitInformation
 {
-	string orbitName;
-	string year;
-	string freeGroupElement;
-	float period;
-	float energy;
-	float angularMomentum;
-	Vector2[] initialPositions;
-	Vector2[] initialVelocities;
-	Vector2[] allPositions;
+	public string orbitName;
+	public string year;
+	public string freeGroupElement;
+	public float period;
+	public float energy;
+	public float angularMomentum;
+	public Vector2[] initialPositions;
+	public Vector2[] initialVelocities;
+	public Vector2[] allPositions;
 }

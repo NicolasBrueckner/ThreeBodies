@@ -252,9 +252,9 @@ function trajectory() {
 }
 
 if (require.main === module) {
-  //GenerateBinary_PerSequence();
-  //GenerateAdditionalBinary_PerSequence();
-  ReadAdditionalInfo('./additional_binary_sequence/additional-Li__Liao_Equal_Mass-IC_ic.bin');
+  GenerateBinaryPerSequence();
+  //GenerateAdditionalBinaryPerSequence();
+  //ReadAdditionalInfo('./additional_binary_sequence/additional-Li__Liao_Equal_Mass-IC_ic.bin');
   /*
   CreateHTMLFromFirstOrbitBinary(`Suvakov`, `IVa - Moth I`);
   CreateHTMLFromFirstOrbitBinary(`Suvakov`, `I - Butterfly I`);
@@ -299,7 +299,7 @@ function CreateHTMLFromTrajectories(trajectories, group, sequence, orbit)
         console.log(`Wrote HTML: ${htmlName}`);
 }
 
-function GenerateBinary_PerSequence() {
+function GenerateBinaryPerSequence() {
   const outDir = path.join(__dirname, 'binary_sequence');
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -307,109 +307,87 @@ function GenerateBinary_PerSequence() {
     for (const [sequenceName, orbits] of Object.entries(sequences)) {
       console.log(`Writing binary for ${groupName} / ${sequenceName}…`);
 
-      const filename = `${safe(groupName)}-${safe(sequenceName)}.bin`;
+      const filename = `${safe(sequenceName)}.bytes`;
       const ws = fs.createWriteStream(path.join(outDir, filename));
 
       for (const [orbitName, ic] of Object.entries(orbits)) {
+        const parts = [];
+
+        //update initial conditions
         initialConditions = {
           m:         ic.m         || [1,1,1],
           tolerance: ic.tolerance || 1e-9,
-          tEnd:    ic.T,
+          tEnd:      ic.T,
           y0: [
             ic.x[0][0], ic.x[0][1], ic.v[0][0], ic.v[0][1],
             ic.x[1][0], ic.x[1][1], ic.v[1][0], ic.v[1][1],
             ic.x[2][0], ic.x[2][1], ic.v[2][0], ic.v[2][1],
           ]
-        };
+        }
+        //calculate all positions
         const fullTraj = trajectory();
         const {t: Td, position: Pd} = decimateTrajectories(fullTraj, 0.2);
-
         const t32 = Float32Array.from(Td);
         const pos32 = Float32Array.from(Pd);
-
         const M = t32.length;
-
-        const buf = Buffer.allocUnsafe(4 + 4*M + 4*6*M);
+        
         let offs = 0;
 
-        buf.writeUInt32LE(M, offs);
-        offs += 4;
+        //write M into buffer (length of t and pos values)
+        const Mbuf = Buffer.allocUnsafe(4);
+        Mbuf.writeUInt32LE(M, 0);
+        parts.push(Mbuf);
 
+        //write t array into buffer
+        const tbuf = Buffer.allocUnsafe(4*M);
+        offs = 0;
         for (let i = 0; i < M; i++, offs += 4) {
-          buf.writeFloatLE(t32[i], offs);
+          tbuf.writeFloatLE(t32[i], offs);
         }
-
+        parts.push(tbuf);
+        
+        //write position array into buffer
+        const pbuf = Buffer.allocUnsafe(4*6*M);
+        offs = 0;
         for (let i = 0; i < M; i++) {
           const b = i*6;
-          buf.writeFloatLE(pos32[b+0], offs); offs += 4;
-          buf.writeFloatLE(pos32[b+1], offs); offs += 4;
-          buf.writeFloatLE(pos32[b+2], offs); offs += 4;
-          buf.writeFloatLE(pos32[b+3], offs); offs += 4;
-          buf.writeFloatLE(pos32[b+4], offs); offs += 4;
-          buf.writeFloatLE(pos32[b+5], offs); offs += 4;
+          pbuf.writeFloatLE(pos32[b+0], offs); offs += 4;
+          pbuf.writeFloatLE(pos32[b+1], offs); offs += 4;
+          pbuf.writeFloatLE(pos32[b+2], offs); offs += 4;
+          pbuf.writeFloatLE(pos32[b+3], offs); offs += 4;
+          pbuf.writeFloatLE(pos32[b+4], offs); offs += 4;
+          pbuf.writeFloatLE(pos32[b+5], offs);
         }
-        ws.write(buf);
-      }
+        parts.push(pbuf);
 
-      ws.end(() => {
-        console.log(` → Finished ${filename}`);
-      });
-    }
-  }
-}
-
-function GenerateAdditionalBinary_PerSequence() {
-  const outDir = path.join(__dirname, 'additional_binary_sequence');
-  fs.mkdirSync(outDir, { recursive: true });
-
-  for (const [groupName, sequences] of Object.entries(conditions)) {
-    for (const [sequenceName, orbits] of Object.entries(sequences)) {
-      console.log(`Writing additional binary for ${groupName} / ${sequenceName}…`);
-
-      const filename = `additional-${safe(groupName)}-${safe(sequenceName)}.bin`;
-      const ws = fs.createWriteStream(path.join(outDir, filename));
-
-      for (const [orbitName, ic] of Object.entries(orbits)) {
-        const additionalInfo = {
-          gN: groupName,
-          sN: sequenceName,
-          oN: orbitName,
-          year: ic.year,
-          G: ic.G,
-          T: ic.T,
-          E: ic.E,
-          L: ic.L,
-        };
-
-        if(orbitName === 'Broucke A 1')
-          console.log(additionalInfo);
-
-        const stringKeys = ['gN', 'sN', 'oN', 'year', 'G'];
-        const parts = [];
-
-        for(const key of stringKeys) {
-          const s = (additionalInfo[key] || '');
-          const strBuf = Buffer.from(s, 'utf8');
+        //write name, year and G into buffer
+        for(const key of ['year', 'G']) {
+          const strBuf = Buffer.from(orbitName, 'utf8');
           const lenBuf = Buffer.allocUnsafe(4);
           lenBuf.writeUInt32LE(strBuf.length, 0);
           parts.push(lenBuf, strBuf);
         }
-
-        const numBuf = Buffer.allocUnsafe(4+4+4);
-        let offs = 0;
-        numBuf.writeFloatLE(additionalInfo.T, offs); offs+=4;
-        numBuf.writeFloatLE(additionalInfo.E, offs); offs+=4;
-        numBuf.writeFloatLE(additionalInfo.L, offs);
+        
+        //write T, E, L and mass into buffer
+        const numBuf = Buffer.allocUnsafe(6*4);
+        offs = 0;
+        numBuf.writeFloatLE(ic.T, offs); offs+=4;
+        numBuf.writeFloatLE(ic.E, offs); offs+=4;
+        numBuf.writeFloatLE(ic.L, offs); offs+=4;
+        numBuf.writeFloatLE(ic.m?.[0] || 1, offs); offs+=4;
+        numBuf.writeFloatLE(ic.m?.[1] || 1, offs); offs+=4;
+        numBuf.writeFloatLE(ic.m?.[2] || 1, offs);
         parts.push(numBuf);
-
+          
+        //concat parts and write to file
         const buf = Buffer.concat(parts);
         ws.write(buf);
       }
-
+      
       ws.end(() => {
         console.log(` → Finished ${filename}`);
       });
-    }
+    };
   }
 }
 
@@ -418,7 +396,7 @@ function ReadAdditionalInfo(filePath) {
   const out = {};
   const buf = fs.readFileSync(filePath)
 
-  for (const key of ['gN','sN','oN','year','G']) {
+  for (const key of ['oN','year','G']) {
     const strLen = buf.readUInt32LE(offs);
     offs += 4;
     out[key] = buf.toString('utf8', offs, offs + strLen);
