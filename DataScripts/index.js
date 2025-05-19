@@ -299,6 +299,10 @@ function CreateHTMLFromTrajectories(trajectories, group, sequence, orbit)
         console.log(`Wrote HTML: ${htmlName}`);
 }
 
+//per orbit output structure:
+//[M: float(4)][t: float(7*M*4)]                                                      - 4 + 28M
+//[name: uint, string(4+uint)][year: uint, string(4+uint)][g: uint, string(4+uint)]
+//[T: float(4)][E: float(4)][L: float(4)][m1: float(4)][m2: float(4)][m3: float(4)]   - 36 + 3uint
 function GenerateBinaryPerSequence() {
   const outDir = path.join(__dirname, 'binary_sequence');
   fs.mkdirSync(outDir, { recursive: true });
@@ -335,7 +339,7 @@ function GenerateBinaryPerSequence() {
 
         //write M into buffer (length of t and pos values)
         const Mbuf = Buffer.allocUnsafe(4);
-        Mbuf.writeUInt32LE(M, 0);
+        Mbuf.writeUInt32LE(M, offs);
         parts.push(Mbuf);
 
         //write t array into buffer
@@ -346,28 +350,39 @@ function GenerateBinaryPerSequence() {
         }
         parts.push(tbuf);
         
-        //write position array into buffer
-        const pbuf = Buffer.allocUnsafe(4*6*M);
+        //write t and p arrays into buffer based on step
+        const tpbuf = Buffer.allocUnsafe(4*7*M);
         offs = 0;
         for (let i = 0; i < M; i++) {
-          const b = i*6;
-          pbuf.writeFloatLE(pos32[b+0], offs); offs += 4;
-          pbuf.writeFloatLE(pos32[b+1], offs); offs += 4;
-          pbuf.writeFloatLE(pos32[b+2], offs); offs += 4;
-          pbuf.writeFloatLE(pos32[b+3], offs); offs += 4;
-          pbuf.writeFloatLE(pos32[b+4], offs); offs += 4;
-          pbuf.writeFloatLE(pos32[b+5], offs);
+          const b = i*7;
+          tpbuf.writeFloatLE(t32[b+0], offs); offs += 4;
+          tpbuf.writeFloatLE(pos32[b+1], offs); offs += 4;
+          tpbuf.writeFloatLE(pos32[b+2], offs); offs += 4;
+          tpbuf.writeFloatLE(pos32[b+3], offs); offs += 4;
+          tpbuf.writeFloatLE(pos32[b+4], offs); offs += 4;
+          tpbuf.writeFloatLE(pos32[b+5], offs); offs += 4;
+          tpbuf.writeFloatLE(pos32[b+6], offs);
         }
-        parts.push(pbuf);
+        parts.push(tpbuf);
 
-        //write name, year and G into buffer
-        for(const key of ['year', 'G']) {
-          const strBuf = Buffer.from(orbitName, 'utf8');
-          const lenBuf = Buffer.allocUnsafe(4);
-          lenBuf.writeUInt32LE(strBuf.length, 0);
-          parts.push(lenBuf, strBuf);
-        }
-        
+        //write name into buffer
+        const nameBuf = Buffer.from(orbitName, 'utf8');
+        const nameLenBuf = Buffer.allocUnsafe(4);
+        nameLenBuf.writeInt32LE(nameBuf.length, 0);
+        parts.push(nameLenBuf, nameBuf);
+
+        //write year into buffer
+        const yearBuf = Buffer.from(orbitName, 'utf8');
+        const yearLenBuf = Buffer.allocUnsafe(4);
+        yearLenBuf.writeInt32LE(yearBuf.length, 0);
+        parts.push(yearLenBuf, yearBuf);
+
+        //write g into buffer
+        const gbuf = Buffer.from(orbitName, 'utf8');
+        const gLenBuf = Buffer.allocUnsafe(4);
+        gLenBuf.writeInt32LE(gbuf.length, 0);
+        parts.push(gLenBuf, gbuf);
+
         //write T, E, L and mass into buffer
         const numBuf = Buffer.allocUnsafe(6*4);
         offs = 0;
@@ -397,7 +412,7 @@ function ReadAdditionalInfo(filePath) {
   const buf = fs.readFileSync(filePath)
 
   for (const key of ['oN','year','G']) {
-    const strLen = buf.readUInt32LE(offs);
+    const strLen = buf.readInt32LE(offs);
     offs += 4;
     out[key] = buf.toString('utf8', offs, offs + strLen);
     offs += strLen;
@@ -423,12 +438,12 @@ function ReadOrbitFromBinary(buf, orbitIndex)
   let offs = 0;
   
   for(let idx = 0; idx < orbitIndex; idx++) {
-      const M = buf.readUInt32LE(offs);
+      const M = buf.readInt32LE(offs);
       const step = M + 4*M + 4*6*M;
       offs += step;
   }
     
-  const M = buf.readUInt32LE(offs);
+  const M = buf.readInt32LE(offs);
   offs += 4;
   
   const t = new Array(M);

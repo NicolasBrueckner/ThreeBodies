@@ -1,8 +1,6 @@
-using System.Runtime.InteropServices;
 using UnityEngine;
 
-[StructLayout( LayoutKind.Sequential )]
-public struct OrbitInformation
+public class OrbitInformation
 {
 	public string orbitName;
 	public string year;
@@ -12,5 +10,10 @@ public struct OrbitInformation
 	public float angularMomentum;
 	public Vector2[] initialPositions;
 	public Vector2[] initialVelocities;
-	public Vector2[] allPositions;
+
+	public float[] times;
+	public Vector2[] posBody0;
+	public Vector2[] posBody1;
+	public Vector2[] posBody2;
+	public float[] masses;
 }
