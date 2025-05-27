@@ -1,4 +1,8 @@
+#region
+
 using UnityEngine;
+
+#endregion
 
 public class OrbitInformation
 {
@@ -15,5 +19,7 @@ public class OrbitInformation
 	public Vector2[] posBody0;
 	public Vector2[] posBody1;
 	public Vector2[] posBody2;
-	public float[] masses;
+	public float m1;
+	public float m2;
+	public float m3;
 }

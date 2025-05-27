@@ -1,25 +1,34 @@
+#region
+
 using System;
-using System.Buffers.Binary;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine;
 
+#endregion
+
 public static class OrbitInformationBinaryLoader
 {
+	private static readonly ArrayPool<float> _floatPool = ArrayPool<float>.Shared;
+
+	public static float[] _timesBuffer = Array.Empty<float>();
+
+	//formatting: x0, y0, x1, y1, x2, y2
+	public static float[] _positionsBuffer = Array.Empty<float>();
 	public static Dictionary<string, int> currentOrbitsDict;
 	public static OrbitInformation currentOrbitInfo;
 
 	/// <summary>
-	/// Reads through metadata-only .bin (one record per orbit) and
-	/// builds a dictionary mapping each orbit's name and its start offset.
-	/// 
-	/// File layout assumed:
-	///[M: float(4)][t: float(M*4)][p: float(6*M*4)]                                       - 4 + 28M
-	///[name: uint, string(4+uint)][year: uint, string(4+uint)][g: uint, string(4+uint)]
-	///[T: float(4)][E: float(4)][L: float(4)][m1: float(4)][m2: float(4)][m3: float(4)]   - 36 + 3uint
+	///     Reads through metadata-only .bin (one record per orbit) and
+	///     builds a dictionary mapping each orbit's name and its start offset.
+	///     File layout assumed:
+	///     [M: float(4)][t: float(M*4)][p: float(6*M*4)]                                       - 4 + 28M
+	///     [name: uint, string(4+uint)][year: uint, string(4+uint)][g: uint, string(4+uint)]
+	///     [T: float(4)][E: float(4)][L: float(4)][m1: float(4)][m2: float(4)][m3: float(4)]   - 36 + 3uint
 	/// </summary>
-	private static void FillOrbitsDict( string sequenceFileName )
+	public static void FillOrbitsDict( string sequenceFileName )
 	{
 		currentOrbitsDict = new();
 
@@ -27,30 +36,36 @@ public static class OrbitInformationBinaryLoader
 		byte[] bytes = asset.bytes;
 		ReadOnlySpan<byte> span = new( bytes );
 		int offset = 0;
+		int counter = 0;
 
-		while ( offset <= span.Length )
+		while( offset + 4 <= span.Length )
 		{
+			Debug.Log( $"offset: {offset}, counter: {counter++}" );
 			//get starting offset for orbit
 			int o = offset;
 
 			//skip time and position arrays
-			int M = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
-			offset += 4 + 28 * M;
+			int m = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
+			Debug.Log( $"m: {m}" );
+			offset += 4 + 7 * 4 * m;
+			Debug.Log( $"offset after t and p: {offset}" );
 
 			//get orbit name
 			int strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
+			Debug.Log( $"strLen: {strLen}" );
 			offset += 4;
 			string s = Encoding.UTF8.GetString( span.Slice( offset, strLen ) );
 			offset += strLen;
+			Debug.Log( $"orbit name: {s}" );
 
 			//skip to next orbit
 			strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
 			offset += 4 + strLen;
 			strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
 			offset += 4 + strLen;
-			offset += 24;
+			offset += 6 * 4;
 
-			if ( !string.IsNullOrEmpty( s ) )
+			if( !string.IsNullOrEmpty( s ) )
 				currentOrbitsDict.TryAdd( s, o );
 		}
 	}
@@ -62,55 +77,53 @@ public static class OrbitInformationBinaryLoader
 		ReadOnlySpan<byte> span = new( bytes );
 		int offset = currentOrbitsDict[ orbitName ];
 
-		int M = BinaryPrimitives.( span.Slice( offset, 4 ) );
+		int m = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
 		offset += 4;
 
-		string year;
-		string G;
-		float T;
-		float E;
-		float L;
-		Vector2[] initialVelocities = new Vector2[ 3 ];
-		float[] t = new float[ M ];
-		float[] masses = new float[ 3 ];
-		Vector2[] posBody0 = new Vector2[ M ];
-		Vector2[] posBody1 = new Vector2[ M ];
-		Vector2[] posBody2 = new Vector2[ M ];
-
-		ReadOnlySpan<float> timeSpan = MemoryMarshal.Cast<byte, float>( span.Slice( offset, 4 * M ) );
-		timeSpan.CopyTo( t );
-		offset += 4 * M;
-
-		ReadOnlySpan<float> positionSpan = MemoryMarshal.Cast<byte, float>( span.Slice( offset, 4 * 6 * M ) );
-		offset += 4 * 6 * M;
-
-		for ( int i = 0; i < M; i++ )
+		if( _timesBuffer.Length < m )
 		{
-			int i6 = i * 6;
-			posBody0[ i ] = new Vector2( positionSpan[ i6 + 0 ], positionSpan[ i6 + 1 ] );
-			posBody1[ i ] = new Vector2( positionSpan[ i6 + 2 ], positionSpan[ i6 + 3 ] );
-			posBody2[ i ] = new Vector2( positionSpan[ i6 + 4 ], positionSpan[ i6 + 5 ] );
+			if( _timesBuffer.Length != 0 )
+				_floatPool.Return( _timesBuffer );
+
+			_timesBuffer = _floatPool.Rent( m );
 		}
 
+		ReadOnlySpan<float> timeSpan = MemoryMarshal.Cast<byte, float>( span.Slice( offset, 4 * m ) );
+		timeSpan.CopyTo( _timesBuffer );
+		offset += 4 * m;
+
+		int posCount = 6 * m;
+		if( _positionsBuffer.Length < posCount )
+		{
+			if( _positionsBuffer.Length != 0 )
+				_floatPool.Return( _positionsBuffer );
+			_positionsBuffer = _floatPool.Rent( posCount );
+		}
+
+		ReadOnlySpan<float> positionSpan = MemoryMarshal.Cast<byte, float>( span.Slice( offset, 4 * posCount ) );
+		positionSpan.CopyTo( _positionsBuffer );
+		offset += 4 * posCount;
 
 		int strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
 		offset += 4 + strLen;
 		strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
-		year = Encoding.UTF8.GetString( span.Slice( offset + 4, strLen ) );
+		string year = Encoding.UTF8.GetString( span.Slice( offset + 4, strLen ) );
 		offset += 4 + strLen;
 		strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
-		G = Encoding.UTF8.GetString( span.Slice( offset + 4, strLen ) );
+		string G = Encoding.UTF8.GetString( span.Slice( offset + 4, strLen ) );
 		offset += 4 + strLen;
 
-		T = MemoryMarshal.Read<float>( span.Slice( offset, 4 ) );
-		E = MemoryMarshal.Read<float>( span.Slice( offset + 4, 4 ) );
-		L = MemoryMarshal.Read<float>( span.Slice( offset + 8, 4 ) );
+		float T = MemoryMarshal.Read<float>( span.Slice( offset, 4 ) );
+		float E = MemoryMarshal.Read<float>( span.Slice( offset + 4, 4 ) );
+		float L = MemoryMarshal.Read<float>( span.Slice( offset + 8, 4 ) );
 		offset += 12;
 
-		for ( int i = 0; i < 3; i++ )
-			masses[ i ] = MemoryMarshal.Read<float>( span.Slice( offset + i * 4, 4 ) );
-		offset += 3 * 4;
+		float m1 = MemoryMarshal.Read<float>( span.Slice( offset, 4 ) );
+		float m2 = MemoryMarshal.Read<float>( span.Slice( offset + 4, 4 ) );
+		float m3 = MemoryMarshal.Read<float>( span.Slice( offset + 8, 4 ) );
 
+		Vector2[] initialPositions = new Vector2[ 3 ];
+		Vector2[] initialVelocities = new Vector2[ 3 ];
 		currentOrbitInfo = new OrbitInformation
 		{
 			orbitName = orbitName,
@@ -119,14 +132,11 @@ public static class OrbitInformationBinaryLoader
 			period = T,
 			energy = E,
 			angularMomentum = L,
-			initialPositions = new Vector2[ 3 ] { posBody0[ 0 ], posBody1[ 0 ], posBody2[ 0 ] },
-			initialVelocities = initialVelocities,//TODO: write and read those
-
-			times = t,
-			posBody0 = posBody0,
-			posBody1 = posBody1,
-			posBody2 = posBody2,
-			masses = masses
+			initialPositions = initialPositions,
+			initialVelocities = initialVelocities, //TODO: write and read those
+			m1 = m1,
+			m2 = m2,
+			m3 = m3,
 		};
 	}
 }
