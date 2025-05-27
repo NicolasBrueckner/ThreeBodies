@@ -258,10 +258,15 @@ function trajectory() {
 }
 
 if (require.main === module) {
-  //const seq = readBinarySequence(path.join(__dirname, 'binary_sequence', 'Broucke.bytes'));
-  //console.log(seq);
-
-  GenerateBinaryPerSequence();
+  //GenerateBinaryPerSequence();
+  const seqFile = path.join(__dirname, 'binary_sequence', 'IC_ic.bytes');
+  const allOrbits = readSequenceFile(seqFile);
+  console.log(`Found ${allOrbits.length} orbits in IC_ic.bytes`);
+  allOrbits.forEach((orb, i) => {
+    console.log(
+      `Orbit #${i}: name="${orb.orbitName}", M=${orb.M}, T=${orb.T}`
+    );
+  });
 }
 
 
@@ -335,12 +340,12 @@ function GenerateBinaryPerSequence() {
         nameLen.writeInt32LE(nameStr.length, 0);
         parts.push(nameLen, nameStr);
 
-        const yearStr = Buffer.from(ic.year || '', 'utf8');
+        const yearStr = Buffer.from(ic.year ?? '', 'utf8');
         const yearLen = Buffer.allocUnsafe(4);
         yearLen.writeInt32LE(yearStr.length, 0);
         parts.push(yearLen, yearStr);
 
-        const gStr = Buffer.from(ic.G || '', 'utf8');
+        const gStr = Buffer.from(ic.G ?? '', 'utf8');
         const gLen = Buffer.allocUnsafe(4);
         gLen.writeInt32LE(gStr.length, 0);
         parts.push(gLen, gStr);
@@ -348,12 +353,12 @@ function GenerateBinaryPerSequence() {
         //write T, E, L and mass into buffer
         offs=0;
         const metaBuf = Buffer.allocUnsafe(6*4);
-        metaBuf.writeFloatLE(ic.T || -1, offs); offs += 4;
-        metaBuf.writeFloatLE(ic.E || -1, offs); offs += 4;
-        metaBuf.writeFloatLE(ic.L || -1, offs); offs += 4;
-        metaBuf.writeFloatLE(ic.m?.[0] || 1, offs); offs += 4;
-        metaBuf.writeFloatLE(ic.m?.[1] || 1, offs); offs += 4;
-        metaBuf.writeFloatLE(ic.m?.[2] || 1, offs); offs += 4;
+        metaBuf.writeFloatLE(ic.T ?? -1, offs); offs += 4;
+        metaBuf.writeFloatLE(ic.E ?? -1, offs); offs += 4;
+        metaBuf.writeFloatLE(ic.L ?? -1, offs); offs += 4;
+        metaBuf.writeFloatLE(ic.m?.[0] ?? 1, offs); offs += 4;
+        metaBuf.writeFloatLE(ic.m?.[1] ?? 1, offs); offs += 4;
+        metaBuf.writeFloatLE(ic.m?.[2] ?? 1, offs);
         parts.push(metaBuf);
           
         if(M>biggestOrbit.number)
@@ -371,7 +376,7 @@ function GenerateBinaryPerSequence() {
         console.log(` → Finished ${filename}`);
       });
     }
-    console.log(`biggest orbit: ${biggestOrbit.number}, ${biggestOrbit.orbitName}, ${biggestOrbit.sequenceName}`);
+    console.log(`biggest orbit: ${biggestOrbit.number}, ${biggestOrbit.orbitName}, ${biggestOrbit.sequenceName}, group: ${groupName}`);
   }
 }
 
@@ -399,150 +404,56 @@ function decimateTrajectories(traj, p) {
   return { t: t2, position: pos2 };
 }
 
-function readBinarySequence(filePath) {
+function readSequenceFile(filePath) {
   const buf = fs.readFileSync(filePath);
-  let offset = 0;
+  const orbits = [];
+  let off = 0;
 
-  // 1) M: 32-bit little-endian
-  const M = buf.readInt32LE(offset);
-  offset += 4;
+  while (off < buf.length) {
+    // 1) number of timesteps M
+    const M = buf.readInt32LE(off);
+    off += 4;
 
-  // 2) times: M half-floats (2 bytes each)
-  const tBytes = buf.slice(offset, offset + M * 2);
-  const times = new Float16Array(
-    tBytes.buffer,
-    tBytes.byteOffset,
-    M
-  );
-  offset += M * 2;
-
-  // 3) positions: M*6 half-floats
-  const Pcount = M * 6;
-  const pBytes = buf.slice(offset, offset + Pcount * 2);
-  const positions = new Float16Array(
-    pBytes.buffer,
-    pBytes.byteOffset,
-    Pcount
-  );
-  offset += Pcount * 2;
-
-  // helper to read a length-prefixed UTF-8 string
-  function readString() {
-    const len = buf.readInt32LE(offset);
-    offset += 4;
-    const s = buf.toString('utf8', offset, offset + len);
-    offset += len;
-    return s;
-  }
-
-  // 4) your three strings
-  const orbitName = readString();
-  const year      = readString();
-  const G         = readString();
-
-  // 5) meta: 6 half-floats [T, E, L, m1, m2, m3]
-  const metaBytes = buf.slice(offset, offset + 6 * 2);
-  const meta16 = new Float16Array(
-    metaBytes.buffer,
-    metaBytes.byteOffset,
-    6
-  );
-  const [T, E, L, m1, m2, m3] = Array.from(meta16);
-
-  return {
-    M,
-    times:     Array.from(times),
-    positions: Array.from(positions),
-    orbitName,
-    year,
-    G,
-    meta: {
-      T, E, L,
-      masses: [m1, m2, m3]
+    // 2) M float32’s for t
+    const t = new Float32Array(M);
+    for (let i = 0; i < M; i++, off += 4) {
+      t[i] = buf.readFloatLE(off);
     }
-  };
-}
 
-function CreateHTMLFromOrbitBinary(group, sequence, orbitIndex) {
-  const binPath = path.join(__dirname, 'binary_sequence', `${safe(group)}-${safe(sequence)}.bin`);
-  const buf = fs.readFileSync(binPath);
-
-  const trajectories = ReadOrbitFromBinary(buf, orbitIndex);
-  CreateHTMLFromTrajectories(trajectories, group, sequence, `orbit ${orbitIndex}`);
-}
-
-function ReadOrbitFromBinary(buf, orbitIndex)
-{
-  let offs = 0;
-  
-  for(let idx = 0; idx < orbitIndex; idx++) {
-      const M = buf.readInt32LE(offs);
-      const step = M + 4*M + 4*6*M;
-      offs += step;
-  }
-    
-  const M = buf.readInt32LE(offs);
-  offs += 4;
-  
-  const t = new Array(M);
-  for (let i = 0; i < M; i++, offs += 4) {
-    t[i] = buf.readFloatLE(offs);
-  }
-  
-  const position = new Array(6 * M);
-  for (let i = 0; i < M; i++) {
-    const base  = i * 6;
-    const x0    = buf.readFloatLE(offs); offs += 4;
-    const y0    = buf.readFloatLE(offs); offs += 4;
-    const x1    = buf.readFloatLE(offs); offs += 4;
-    const y1    = buf.readFloatLE(offs); offs += 4;
-    const x2    = buf.readFloatLE(offs); offs += 4;
-    const y2    = buf.readFloatLE(offs); offs += 4;
-  
-    position[base + 0] = x0;
-    position[base + 1] = y0;
-    position[base + 2] = x1;
-    position[base + 3] = y1;
-    position[base + 4] = x2;
-    position[base + 5] = y2;
-  }
-  
-  return { t, position };
-}
-
-
-function CreateHTMLFromTrajectories(trajectories, group, sequence, orbit)
-{
-  const htmlName = `${safe(group)}-${safe(sequence)}-${safe(orbit)}.html`;
-  const html = `<!DOCTYPE html>
-  <html><head><meta charset="utf-8">
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <title>${group} › ${sequence} › ${orbit}</title>
-  </head>
-  <body>
-  <div id="plot" style="width:100%;height:100vh;"></div>
-  <script>
-  const result = ${JSON.stringify(trajectories)};
-  const x0 = [], y0 = [], x1 = [], y1 = [], x2 = [], y2 = [];
-  for (let i = 0; i < result.position.length; i += 3) {
-    x0.push(result.position[i+0]);  y0.push(result.position[i+1]);
-    x1.push(result.position[i+3]);  y1.push(result.position[i+4]);
-    x2.push(result.position[i+6]);  y2.push(result.position[i+7]);
+    // 3) 6*M float32’s for position+velocity
+    const p = new Float32Array(6 * M);
+    for (let i = 0; i < 6 * M; i++, off += 4) {
+      p[i] = buf.readFloatLE(off);
     }
-  Plotly.newPlot('plot', [
-    { x: x0, y: y0, mode: 'markers', name: 'Body 0' },
-    { x: x1, y: y1, mode: 'markers', name: 'Body 1' },
-    { x: x2, y: y2, mode: 'markers', name: 'Body 2' }
-    ], {
-      title: '${group} › ${sequence} › ${orbit}',
-      xaxis: { title: 'x' },
-      yaxis: { title: 'y', scaleanchor: 'x', scaleratio: 1 }
-      }, {
-        scrollZoom: true
-        });
-        </script>
-        </body>
-        </html>`;
-        fs.writeFileSync(path.join(__dirname,'htmloutput',htmlName), html);
-        console.log(`Wrote HTML: ${htmlName}`);
+
+    // 4) orbitName string
+    const nameLen = buf.readInt32LE(off);
+    off += 4;
+    const orbitName = buf.toString('utf8', off, off + nameLen);
+    off += nameLen;
+
+    // 5) year string
+    const yearLen = buf.readInt32LE(off);
+    off += 4;
+    const year = buf.toString('utf8', off, off + yearLen);
+    off += yearLen;
+
+    // 6) G string
+    const gLen = buf.readInt32LE(off);
+    off += 4;
+    const G = buf.toString('utf8', off, off + gLen);
+    off += gLen;
+
+    // 7) metadata floats: T, E, L, m0, m1, m2
+    const T = buf.readFloatLE(off); off += 4;
+    const E = buf.readFloatLE(off); off += 4;
+    const L = buf.readFloatLE(off); off += 4;
+    const m0 = buf.readFloatLE(off); off += 4;
+    const m1 = buf.readFloatLE(off); off += 4;
+    const m2 = buf.readFloatLE(off); off += 4;
+
+    orbits.push({ M, t, p, orbitName, year, G, T, E, L, m: [m0, m1, m2] });
+  }
+
+  return orbits;
 }

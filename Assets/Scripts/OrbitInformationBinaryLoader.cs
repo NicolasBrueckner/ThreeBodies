@@ -33,12 +33,14 @@ public static class OrbitInformationBinaryLoader
 		currentOrbitsDict = new();
 
 		TextAsset asset = Resources.Load<TextAsset>( sequenceFileName );
+		Debug.Log( $"data siz: {asset.dataSize}" );
 		byte[] bytes = asset.bytes;
 		ReadOnlySpan<byte> span = new( bytes );
 		int offset = 0;
 		int counter = 0;
 
-		while( offset + 4 <= span.Length )
+		Debug.Log( $"span length: {span.Length}" );
+		while( offset + 100 <= span.Length )
 		{
 			Debug.Log( $"offset: {offset}, counter: {counter++}" );
 			//get starting offset for orbit
@@ -64,6 +66,7 @@ public static class OrbitInformationBinaryLoader
 			strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
 			offset += 4 + strLen;
 			offset += 6 * 4;
+			Debug.Log( $"offset after everything: {offset}" );
 
 			if( !string.IsNullOrEmpty( s ) )
 				currentOrbitsDict.TryAdd( s, o );
