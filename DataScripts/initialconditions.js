@@ -78,9 +78,9 @@ module.exports = {
     "Henon": Henon
   },
   "Li & Liao Equal Mass": {
-    "I.A i.c.": IA_ic_equalMass,
-    "I.B i.c.": IB_ic_equalMass,
-    "I.C i.c.": IC_ic_equalMass
+    "I.A i.c. equal mass": IA_ic_equalMass,
+    "I.B i.c. equal mass": IB_ic_equalMass,
+    "I.C i.c. equal mass": IC_ic_equalMass
   },
   "Li & Liao Unequal Mass": {
     "I.A i.c.": IA_ic,

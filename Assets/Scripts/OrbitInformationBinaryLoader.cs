@@ -33,32 +33,25 @@ public static class OrbitInformationBinaryLoader
 		currentOrbitsDict = new();
 
 		TextAsset asset = Resources.Load<TextAsset>( sequenceFileName );
-		Debug.Log( $"data siz: {asset.dataSize}" );
 		byte[] bytes = asset.bytes;
 		ReadOnlySpan<byte> span = new( bytes );
 		int offset = 0;
 		int counter = 0;
 
-		Debug.Log( $"span length: {span.Length}" );
 		while( offset + 100 <= span.Length )
 		{
-			Debug.Log( $"offset: {offset}, counter: {counter++}" );
 			//get starting offset for orbit
 			int o = offset;
 
 			//skip time and position arrays
 			int m = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
-			Debug.Log( $"m: {m}" );
 			offset += 4 + 7 * 4 * m;
-			Debug.Log( $"offset after t and p: {offset}" );
 
 			//get orbit name
 			int strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
-			Debug.Log( $"strLen: {strLen}" );
 			offset += 4;
 			string s = Encoding.UTF8.GetString( span.Slice( offset, strLen ) );
 			offset += strLen;
-			Debug.Log( $"orbit name: {s}" );
 
 			//skip to next orbit
 			strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
@@ -66,7 +59,6 @@ public static class OrbitInformationBinaryLoader
 			strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
 			offset += 4 + strLen;
 			offset += 6 * 4;
-			Debug.Log( $"offset after everything: {offset}" );
 
 			if( !string.IsNullOrEmpty( s ) )
 				currentOrbitsDict.TryAdd( s, o );
@@ -119,11 +111,9 @@ public static class OrbitInformationBinaryLoader
 		float T = MemoryMarshal.Read<float>( span.Slice( offset, 4 ) );
 		float E = MemoryMarshal.Read<float>( span.Slice( offset + 4, 4 ) );
 		float L = MemoryMarshal.Read<float>( span.Slice( offset + 8, 4 ) );
-		offset += 12;
-
-		float m1 = MemoryMarshal.Read<float>( span.Slice( offset, 4 ) );
-		float m2 = MemoryMarshal.Read<float>( span.Slice( offset + 4, 4 ) );
-		float m3 = MemoryMarshal.Read<float>( span.Slice( offset + 8, 4 ) );
+		float m1 = MemoryMarshal.Read<float>( span.Slice( offset + 12, 4 ) );
+		float m2 = MemoryMarshal.Read<float>( span.Slice( offset + 16, 4 ) );
+		float m3 = MemoryMarshal.Read<float>( span.Slice( offset + 20, 4 ) );
 
 		Vector2[] initialPositions = new Vector2[ 3 ];
 		Vector2[] initialVelocities = new Vector2[ 3 ];

@@ -1,9 +1,3 @@
-const {
-  Float16Array,
-  getFloat16,
-  setFloat16,
-  f16round
-} = require('@petamoriken/float16');
 const fs = require('fs');
 const path = require('path');
 const conditions = require('./initialconditions.js');
@@ -64,6 +58,7 @@ function ode45(outputState, inputState, f, options) {
   var y = inputState.y;
   var n = y.length;
   var dt = inputState.dt === undefined ? 1.0 : +inputState.dt;
+
   var t = inputState.t === undefined ? 0.0 : +inputState.t;
   if (out.y === undefined) {
     out.y = new Float64Array(n);
@@ -259,19 +254,23 @@ function trajectory() {
 
 if (require.main === module) {
   //GenerateBinaryPerSequence();
-  const seqFile = path.join(__dirname, 'binary_sequence', 'IC_ic.bytes');
+  
+  const seqFile = path.join(__dirname, 'binary_sequence', 'Broucke.bytes');
   const allOrbits = readSequenceFile(seqFile);
+  plotOrbit(allOrbits, 0);
+  
+  /*
   console.log(`Found ${allOrbits.length} orbits in IC_ic.bytes`);
   allOrbits.forEach((orb, i) => {
     console.log(
       `Orbit #${i}: name="${orb.orbitName}", M=${orb.M}, T=${orb.T}`
     );
-  });
+  });*/
 }
 
 
 //per orbit output structure:
-//[M: float(4)][t: float16(M*4)][pos: float16(6*4*M)]                                 - 4 + 14M
+//[M: float(4)][t: float16(M*4)][pos: float16(6*4*M)]                                 - 4 + 28M
 //[name: uint, string(4+uint)][year: uint, string(4+uint)][g: uint, string(4+uint)]
 //[T: float(4)][E: float(4)][L: float(4)][m1: float(4)][m2: float(4)][m3: float(4)]   - 36 + 3uint
 function GenerateBinaryPerSequence() {
@@ -309,6 +308,10 @@ function GenerateBinaryPerSequence() {
         const M = t32.length;
         let offs = 0;
 
+        if(orbitName==='Broucke A 1') {
+          debugPlotRawPoints(p32, M);
+        }
+
         //write M into buffer (length of t and pos values)
         const Mbuf = Buffer.allocUnsafe(4);
         Mbuf.writeInt32LE(M, offs);
@@ -331,7 +334,7 @@ function GenerateBinaryPerSequence() {
           pbuf.writeFloatLE(p32[b+2], offs); offs += 4;
           pbuf.writeFloatLE(p32[b+3], offs); offs += 4;
           pbuf.writeFloatLE(p32[b+4], offs); offs += 4;
-          pbuf.writeFloatLE(p32[b+5], offs);
+          pbuf.writeFloatLE(p32[b+5], offs); offs += 4;
         }
         parts.push(pbuf);
 
@@ -420,7 +423,7 @@ function readSequenceFile(filePath) {
       t[i] = buf.readFloatLE(off);
     }
 
-    // 3) 6*M float32’s for position+velocity
+    // 3) 6 Floats (x0, y0, x1, y1, x2, y2) for positions
     const p = new Float32Array(6 * M);
     for (let i = 0; i < 6 * M; i++, off += 4) {
       p[i] = buf.readFloatLE(off);
@@ -456,4 +459,128 @@ function readSequenceFile(filePath) {
   }
 
   return orbits;
+}
+
+function plotOrbit(orbits, i, outputPath = 'orbit_plot.html') {
+  const orbit = orbits[i];
+  const M = orbit.M;
+  const p = orbit.p;
+
+  const x0 = [], y0 = [];
+  const x1 = [], y1 = [];
+  const x2 = [], y2 = [];
+
+  for (let j = 0; j < M; j++) {
+    x0.push(p[j * 6 + 0]);
+    y0.push(p[j * 6 + 1]);
+
+    x1.push(p[j * 6 + 2]);
+    y1.push(p[j * 6 + 3]);
+
+    x2.push(p[j * 6 + 4]);
+    y2.push(p[j * 6 + 5]);
+  }
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+      </head>
+      <body>
+        <style>
+          html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+          }
+          #plot {
+            width: 100%;
+            height: 100%;
+          }
+        </style>
+        <div id="plot"></div>
+        <script>
+          Plotly.newPlot('plot', [
+            {
+              x: ${JSON.stringify(x0)},
+              y: ${JSON.stringify(y0)},
+              mode: 'markers',
+              name: 'Body 0'
+            },
+            {
+              x: ${JSON.stringify(x1)},
+              y: ${JSON.stringify(y1)},
+              mode: 'markers',
+              name: 'Body 1'
+            },
+            {
+              x: ${JSON.stringify(x2)},
+              y: ${JSON.stringify(y2)},
+              mode: 'markers',
+              name: 'Body 2'
+            }
+          ], {
+            title: 'Orbit ${i}: ${orbit.orbitName}',
+            xaxis: { title: 'X Position', range: [-5, 5] },
+            yaxis: { title: 'Y Position', range: [-5, 5] },
+            showlegend: true
+          }, {responsive: true});
+        </script>
+      </body>
+    </html>`;
+
+  fs.writeFileSync(outputPath, html);
+  console.log(`Plot saved to ${outputPath}`);
+}
+
+function debugPlotRawPoints(p32, M, name = 'debug_plot.html') {
+  const x0 = [], y0 = [];
+  const x1 = [], y1 = [];
+  const x2 = [], y2 = [];
+
+  for (let j = 0; j < M; j++) {
+    const i = j * 6;
+    x0.push(p32[i + 0]);
+    y0.push(p32[i + 1]);
+    x1.push(p32[i + 2]);
+    y1.push(p32[i + 3]);
+    x2.push(p32[i + 4]);
+    y2.push(p32[i + 5]);
+  }
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8" />
+      <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+      <style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+        #plot { width: 100%; height: 100%; }
+      </style>
+    </head>
+    <body>
+      <div id="plot"></div>
+      <script>
+        Plotly.newPlot('plot', [
+          { x: ${JSON.stringify(x0)}, y: ${JSON.stringify(y0)}, mode: 'markers', name: 'Body 0' },
+          { x: ${JSON.stringify(x1)}, y: ${JSON.stringify(y1)}, mode: 'markers', name: 'Body 1' },
+          { x: ${JSON.stringify(x2)}, y: ${JSON.stringify(y2)}, mode: 'markers', name: 'Body 2' }
+        ], {
+          title: 'Raw Trajectory Plot',
+          xaxis: { title: 'X' },
+          yaxis: { title: 'Y' },
+          showlegend: true
+        }, {responsive: true});
+      </script>
+    </body>
+    </html>
+  `;
+
+  fs.writeFileSync(name, html);
+  console.log(`Raw plot written to ${name}`);
 }
