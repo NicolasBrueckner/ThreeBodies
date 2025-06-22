@@ -13,12 +13,12 @@ public static class OrbitInformationBinaryLoader
 {
 	private static readonly ArrayPool<float> _floatPool = ArrayPool<float>.Shared;
 
+	public static OrbitInformation currentOrbitInfo;
 	public static float[] _timesBuffer = Array.Empty<float>();
 
 	//formatting: x0, y0, x1, y1, x2, y2
 	public static float[] _positionsBuffer = Array.Empty<float>();
 	public static Dictionary<string, int> currentOrbitsDict;
-	public static OrbitInformation currentOrbitInfo;
 
 	/// <summary>
 	///     Reads through metadata-only .bin (one record per orbit) and
@@ -36,7 +36,6 @@ public static class OrbitInformationBinaryLoader
 		byte[] bytes = asset.bytes;
 		ReadOnlySpan<byte> span = new( bytes );
 		int offset = 0;
-		int counter = 0;
 
 		while( offset + 100 <= span.Length )
 		{
