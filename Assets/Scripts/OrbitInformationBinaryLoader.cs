@@ -1,7 +1,6 @@
 #region
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,14 +10,12 @@ using UnityEngine;
 
 public static class OrbitInformationBinaryLoader
 {
-	private static readonly ArrayPool<float> _floatPool = ArrayPool<float>.Shared;
-
-	public static OrbitInformation currentOrbitInfo;
-	public static float[] _timesBuffer = Array.Empty<float>();
+	public static OrbitInformation CurrentOrbitInfo;
+	public static float[] TimesBuffer = Array.Empty<float>();
 
 	//formatting: x0, y0, x1, y1, x2, y2
-	public static float[] _positionsBuffer = Array.Empty<float>();
-	public static Dictionary<string, int> currentOrbitsDict;
+	public static float[] PositionsBuffer = Array.Empty<float>();
+	public static Dictionary<string, int> CurrentOrbitsDict;
 
 	/// <summary>
 	///     Reads through metadata-only .bin (one record per orbit) and
@@ -30,7 +27,7 @@ public static class OrbitInformationBinaryLoader
 	/// </summary>
 	public static void FillOrbitsDict( string sequenceFileName )
 	{
-		currentOrbitsDict = new();
+		CurrentOrbitsDict = new();
 
 		TextAsset asset = Resources.Load<TextAsset>( sequenceFileName );
 		byte[] bytes = asset.bytes;
@@ -60,7 +57,7 @@ public static class OrbitInformationBinaryLoader
 			offset += 6 * 4;
 
 			if( !string.IsNullOrEmpty( s ) )
-				currentOrbitsDict.TryAdd( s, o );
+				CurrentOrbitsDict.TryAdd( s, o );
 		}
 	}
 
@@ -69,33 +66,20 @@ public static class OrbitInformationBinaryLoader
 		TextAsset asset = Resources.Load<TextAsset>( sequenceFileName );
 		byte[] bytes = asset.bytes;
 		ReadOnlySpan<byte> span = new( bytes );
-		int offset = currentOrbitsDict[ orbitName ];
+		int offset = CurrentOrbitsDict[ orbitName ];
 
 		int m = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
 		offset += 4;
 
-		if( _timesBuffer.Length < m )
-		{
-			if( _timesBuffer.Length != 0 )
-				_floatPool.Return( _timesBuffer );
-
-			_timesBuffer = _floatPool.Rent( m );
-		}
-
 		ReadOnlySpan<float> timeSpan = MemoryMarshal.Cast<byte, float>( span.Slice( offset, 4 * m ) );
-		timeSpan.CopyTo( _timesBuffer );
+		TimesBuffer = timeSpan.ToArray();
 		offset += 4 * m;
 
 		int posCount = 6 * m;
-		if( _positionsBuffer.Length < posCount )
-		{
-			if( _positionsBuffer.Length != 0 )
-				_floatPool.Return( _positionsBuffer );
-			_positionsBuffer = _floatPool.Rent( posCount );
-		}
 
 		ReadOnlySpan<float> positionSpan = MemoryMarshal.Cast<byte, float>( span.Slice( offset, 4 * posCount ) );
-		positionSpan.CopyTo( _positionsBuffer );
+		PositionsBuffer = positionSpan.ToArray();
+
 		offset += 4 * posCount;
 
 		int strLen = MemoryMarshal.Read<int>( span.Slice( offset, 4 ) );
@@ -116,7 +100,7 @@ public static class OrbitInformationBinaryLoader
 
 		Vector2[] initialPositions = new Vector2[ 3 ];
 		Vector2[] initialVelocities = new Vector2[ 3 ];
-		currentOrbitInfo = new OrbitInformation
+		CurrentOrbitInfo = new OrbitInformation
 		{
 			orbitName = orbitName,
 			year = year,
