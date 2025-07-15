@@ -201,7 +201,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 1
+    widthMultiplier: 0.3
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -1082,7 +1082,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 1
+    widthMultiplier: 0.3
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -1378,7 +1378,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 1.4
+  orthographic size: 3
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1535,7 +1535,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 1
+    widthMultiplier: 0.3
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -2038,12 +2038,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4b50f758378b324e9584f812cd81297, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sequenceName: Broucke
-  orbitName: Broucke R 11
-  lineRenderer0: {fileID: 122158130}
-  lineRenderer1: {fileID: 622484205}
-  lineRenderer2: {fileID: 891814793}
-  pointSize: 0.05
+  lineRenderers:
+  - {fileID: 122158130}
+  - {fileID: 622484205}
+  - {fileID: 891814793}
 --- !u!1 &1417884627
 GameObject:
   m_ObjectHideFlags: 0
