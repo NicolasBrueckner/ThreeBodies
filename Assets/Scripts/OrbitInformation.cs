@@ -14,12 +14,8 @@ public class OrbitInformation
 	public float angularMomentum;
 	public Vector2[] initialPositions;
 	public Vector2[] initialVelocities;
+	public double[] masses;
 
 	public float[] times;
-	public Vector2[] posBody0;
-	public Vector2[] posBody1;
-	public Vector2[] posBody2;
-	public float m1;
-	public float m2;
-	public float m3;
+	public float[] positions;
 }
