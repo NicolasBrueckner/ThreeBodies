@@ -7,17 +7,18 @@ using UnityEngine;
 
 public class PlanarThreeBodyController : MonoBehaviour
 {
+	public OrbitInformationLoader loader;
 	public int sampleRate = 1;
 	public float scale = 1f;
-	public string fileName;
-	public string orbitName;
 	public LineRenderer[] lineRenderers;
 
 	private void Start()
 	{
-		OrbitInformationLoader loader = new( fileName );
-		OrbitInformation info = loader.GetInformationByName( orbitName );
+		loader.NewOrbitInfoLoaded += OnNewFileLoaded;
+	}
 
+	private void OnNewFileLoaded( OrbitInformation info )
+	{
 		ThreeBodyOrbitCalculator calculator = new();
 
 		double[] y0 =
@@ -48,8 +49,5 @@ public class PlanarThreeBodyController : MonoBehaviour
 				lineRenderers[ j ].SetPosition( i, new Vector3( x, y, 0 ) * scale );
 			}
 		}
-
-		if( Camera.main )
-			Camera.main.orthographicSize *= scale;
 	}
 }

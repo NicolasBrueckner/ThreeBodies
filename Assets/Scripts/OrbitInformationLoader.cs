@@ -1,5 +1,6 @@
 #region
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -7,60 +8,80 @@ using UnityEngine;
 
 #endregion
 
-public class OrbitInformationLoader
+public class OrbitInformationLoader : MonoBehaviour
 {
-	private JObject _root;
-	private List<string> _keys;
+	public event Action NewFileLoaded;
+	public event Action<OrbitInformation> NewOrbitInfoLoaded;
 
-	public OrbitInformationLoader( string jsonPath )
+	private JObject _currentJObjectRoot;
+	private List<string> _currentOrbitNames;
+
+	public void LoadNewFile( string fileName )
 	{
-		TextAsset jsonFile = Resources.Load<TextAsset>( jsonPath );
-		if( jsonFile == null )
+		TextAsset jsonFile = Resources.Load<TextAsset>( fileName );
+
+		try
 		{
-			Debug.LogError( $"Orbit JSON file not found at Resources/{jsonPath}.json" );
-			return;
+			string jsonText = jsonFile.text;
+			_currentJObjectRoot = JObject.Parse( jsonText );
+			_currentOrbitNames = _currentJObjectRoot.Properties().Select( p => p.Name ).ToList();
+
+			NewFileLoaded?.Invoke();
+			GetInformationByIndex( 0 );
 		}
-
-		string jsonText = jsonFile.text;
-		_root = JObject.Parse( jsonText );
-		_keys = _root.Properties().Select( p => p.Name ).ToList();
-	}
-
-	public List<string> GetKeys() => _keys;
-
-	public OrbitInformation GetInformationByIndex( int index )
-	{
-		string key = _keys[ index ];
-		return ConvertToOrbitInformation( key, ( JObject )_root[ key ] );
-	}
-
-	public OrbitInformation GetInformationByName( string name ) =>
-		ConvertToOrbitInformation( name, ( JObject )_root[ name ] );
-
-	private static OrbitInformation ConvertToOrbitInformation( string key, JObject obj )
-	{
-		return new OrbitInformation
+		catch( Exception e )
 		{
-			orbitName = key,
-			year = obj[ "year" ]?.ToString(),
-			freeGroupElement = obj[ "G" ]?.ToString(),
-			period = obj[ "T" ]?.Value<float>() ?? -1,
-			energy = obj[ "E" ]?.Value<float>() ?? -1,
-			angularMomentum = obj[ "L" ]?.Value<float>() ?? -1,
-			initialPositions = obj[ "x" ]
-			                   ?.Select( arr => new Vector2( arr[ 0 ].Value<float>(), arr[ 1 ].Value<float>() ) )
-			                   .ToArray(),
-			initialVelocities = obj[ "v" ]
-			                    ?.Select( arr => new Vector2( arr[ 0 ].Value<float>(), arr[ 1 ].Value<float>() ) )
-			                    .ToArray(),
-			masses = obj[ "m" ]?.Select( m => m.Value<double>() ).ToArray() ?? new[] { 1.0, 1.0, 1.0 },
-		};
+			Console.WriteLine( e );
+			throw;
+		}
+	}
+
+	public List<string> GetKeys() => _currentOrbitNames;
+
+	public OrbitInformation GetInformationByIndex( int orbitIndex )
+	{
+		string key = _currentOrbitNames[ orbitIndex ];
+		return ConvertToOrbitInformation( key, ( JObject )_currentJObjectRoot[ key ] );
+	}
+
+	public OrbitInformation GetInformationByName( string orbitName ) =>
+		ConvertToOrbitInformation( orbitName, ( JObject )_currentJObjectRoot[ orbitName ] );
+
+	private OrbitInformation ConvertToOrbitInformation( string key, JObject obj )
+	{
+		try
+		{
+			OrbitInformation info = new()
+			{
+				orbitName = key,
+				year = obj[ "year" ]?.ToString(),
+				freeGroupElement = obj[ "G" ]?.ToString(),
+				period = obj[ "T" ]?.Value<float>() ?? -1,
+				energy = obj[ "E" ]?.Value<float>() ?? -1,
+				angularMomentum = obj[ "L" ]?.Value<float>() ?? -1,
+				initialPositions = obj[ "x" ]
+				                   ?.Select( arr => new Vector2( arr[ 0 ].Value<float>(), arr[ 1 ].Value<float>() ) )
+				                   .ToArray(),
+				initialVelocities = obj[ "v" ]
+				                    ?.Select( arr => new Vector2( arr[ 0 ].Value<float>(), arr[ 1 ].Value<float>() ) )
+				                    .ToArray(),
+				masses = obj[ "m" ]?.Select( m => m.Value<double>() ).ToArray() ?? new[] { 1.0, 1.0, 1.0 },
+			};
+
+			NewOrbitInfoLoaded?.Invoke( info );
+			return info;
+		}
+		catch( Exception e )
+		{
+			Console.WriteLine( e );
+			throw;
+		}
 	}
 
 	public void Unload()
 	{
-		_root.RemoveAll();
-		_root = null;
-		_keys = null;
+		_currentJObjectRoot.RemoveAll();
+		_currentJObjectRoot = null;
+		_currentOrbitNames = null;
 	}
 }
