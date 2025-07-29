@@ -2,6 +2,7 @@
 
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 #endregion
 
@@ -10,6 +11,8 @@ public class UIController : MonoBehaviour
 	public OrbitInformationLoader loader;
 	public TMP_Dropdown orbitDropdown;
 	public TMP_Dropdown sequenceDropdown;
+	public Button settingButton;
+	public Button hideButton;
 	public SequenceList sequences;
 
 	private void Start()
