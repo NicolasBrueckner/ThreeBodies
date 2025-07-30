@@ -10,9 +10,6 @@ using UnityEngine;
 
 public class OrbitInformationLoader : MonoBehaviour
 {
-	public event Action NewFileLoaded;
-	public event Action<OrbitInformation> NewOrbitInfoLoaded;
-
 	private JObject _currentJObjectRoot;
 	private List<string> _currentOrbitNames;
 
@@ -26,7 +23,7 @@ public class OrbitInformationLoader : MonoBehaviour
 			_currentJObjectRoot = JObject.Parse( jsonText );
 			_currentOrbitNames = _currentJObjectRoot.Properties().Select( p => p.Name ).ToList();
 
-			NewFileLoaded?.Invoke();
+			RuntimeEventManager.InvokeFileLoaded();
 			GetInformationByIndex( 0 );
 		}
 		catch( Exception e )
@@ -68,7 +65,7 @@ public class OrbitInformationLoader : MonoBehaviour
 				masses = obj[ "m" ]?.Select( m => m.Value<double>() ).ToArray() ?? new[] { 1.0, 1.0, 1.0 },
 			};
 
-			NewOrbitInfoLoaded?.Invoke( info );
+			RuntimeEventManager.InvokeOrbitInfoLoaded( info );
 			return info;
 		}
 		catch( Exception e )

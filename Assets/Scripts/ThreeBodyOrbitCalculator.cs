@@ -5,6 +5,12 @@ using System.Collections.Generic;
 
 #endregion
 
+public struct CalculationResult
+{
+	public float[] times;
+	public float[] positions;
+}
+
 public class ThreeBodyOrbitCalculator
 {
 	private double[] _masses;
@@ -40,16 +46,14 @@ public class ThreeBodyOrbitCalculator
 		yp[ viB + 1 ] -= dy * mA;
 	}
 
-	public (List<double> t, List<double> position) Simulate( double[] initialY, double tEnd, double[] masses,
-		int sampleRate,
+	public CalculationResult Simulate( double[] initialY, double tEnd, double[] masses, int sampleRate,
 		double tolerance = 1e-8 )
 	{
 		Ode45Solver.Options config = new() { tolerance = tolerance, tLimit = tEnd };
 		_masses = masses;
-		int i = 0;
 
-		List<double> resultT = new();
-		List<double> resultPos = new();
+		List<float> resultT = new();
+		List<float> resultPos = new();
 		Ode45Solver.State state = new() { t = 0, dt = 1, y = ( double[] )initialY.Clone() };
 
 		StoreStep( state.t, state.y );
@@ -58,17 +62,21 @@ public class ThreeBodyOrbitCalculator
 		{
 			Ode45Solver.Ode45( state, Derivative, config );
 
-			if( i % sampleRate == 0 )
+			if( step % sampleRate == 0 )
 				StoreStep( state.t, state.y );
-			i++;
 		}
 
-		return ( resultT, resultPos );
+		return new CalculationResult { times = resultT.ToArray(), positions = resultPos.ToArray() };
 
 		void StoreStep( double t, double[] y )
 		{
-			resultT.Add( t );
-			resultPos.AddRange( new[] { y[ 0 ], y[ 1 ], y[ 4 ], y[ 5 ], y[ 8 ], y[ 9 ] } );
+			resultT.Add( ( float )t );
+			resultPos.AddRange( new[]
+			{
+				( float )y[ 0 ], ( float )y[ 1 ], // body 0
+				( float )y[ 4 ], ( float )y[ 5 ], // body 1
+				( float )y[ 8 ], ( float )y[ 9 ], // body 2
+			} );
 		}
 	}
 }

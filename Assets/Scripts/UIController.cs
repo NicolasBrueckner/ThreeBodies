@@ -17,7 +17,7 @@ public class UIController : MonoBehaviour
 
 	private void Start()
 	{
-		loader.NewFileLoaded += UpdateOrbitDropdown;
+		RuntimeEventManager.FileLoaded += OnFileLoaded;
 
 		sequenceDropdown.onValueChanged.AddListener( OnSequenceChanged );
 		orbitDropdown.onValueChanged.AddListener( OnOrbitChanged );
@@ -39,7 +39,7 @@ public class UIController : MonoBehaviour
 		loader.LoadNewFile( fileName );
 	}
 
-	private void UpdateOrbitDropdown()
+	private void OnFileLoaded()
 	{
 		orbitDropdown.ClearOptions();
 		orbitDropdown.AddOptions( loader.GetKeys() );

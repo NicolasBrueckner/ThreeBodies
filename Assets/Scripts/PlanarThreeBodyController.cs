@@ -1,6 +1,5 @@
 #region
 
-using System.Collections.Generic;
 using UnityEngine;
 
 #endregion
@@ -12,27 +11,34 @@ public class PlanarThreeBodyController : MonoBehaviour
 	public float scale = 1f;
 	public LineRenderer[] lineRenderers;
 
+	private CalculationResult currentResult;
+
 	private void Start()
 	{
-		loader.NewOrbitInfoLoaded += OnNewFileLoaded;
+		RuntimeEventManager.OrbitInfoLoaded += OnOrbitInfoLoaded;
 	}
 
-	private void OnNewFileLoaded( OrbitInformation info )
+	private void OnOrbitInfoLoaded( OrbitInformation info )
 	{
 		ThreeBodyOrbitCalculator calculator = new();
 
-		double[] y0 =
+		double[] y0 = new double[ 12 ];
+		for( int i = 0; i < 3; i++ )
 		{
-			info.initialPositions[ 0 ].x, info.initialPositions[ 0 ].y, info.initialVelocities[ 0 ].x,
-			info.initialVelocities[ 0 ].y, info.initialPositions[ 1 ].x, info.initialPositions[ 1 ].y,
-			info.initialVelocities[ 1 ].x, info.initialVelocities[ 1 ].y, info.initialPositions[ 2 ].x,
-			info.initialPositions[ 2 ].y, info.initialVelocities[ 2 ].x, info.initialVelocities[ 2 ].y,
-		};
+			y0[ i * 4 + 0 ] = info.initialPositions[ i ].x;
+			y0[ i * 4 + 1 ] = info.initialPositions[ i ].y;
+			y0[ i * 4 + 2 ] = info.initialVelocities[ i ].x;
+			y0[ i * 4 + 3 ] = info.initialVelocities[ i ].y;
+		}
 
-		List<double> positions = calculator.Simulate( y0, info.period, info.masses, sampleRate ).position;
-		Debug.Log( $"number of positions: {positions.Count}" );
+		currentResult = calculator.Simulate( y0, info.period, info.masses, sampleRate );
 
-		int totalFrames = positions.Count / 6;
+		DrawLines(); //currently only for debugging
+	}
+
+	private void DrawLines()
+	{
+		int totalFrames = currentResult.positions.Length / 6;
 		lineRenderers[ 0 ].positionCount = totalFrames;
 		lineRenderers[ 1 ].positionCount = totalFrames;
 		lineRenderers[ 2 ].positionCount = totalFrames;
@@ -44,8 +50,8 @@ public class PlanarThreeBodyController : MonoBehaviour
 			for( int j = 0; j < 3; j++ )
 			{
 				int index = baseIndex + j * 2;
-				float x = ( float )positions[ index ] * 3;
-				float y = ( float )positions[ index + 1 ] * 3;
+				float x = currentResult.positions[ index ] * 3;
+				float y = currentResult.positions[ index + 1 ] * 3;
 				lineRenderers[ j ].SetPosition( i, new Vector3( x, y, 0 ) * scale );
 			}
 		}

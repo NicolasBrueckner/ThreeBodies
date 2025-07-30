@@ -15,7 +15,4 @@ public class OrbitInformation
 	public Vector2[] initialPositions;
 	public Vector2[] initialVelocities;
 	public double[] masses;
-
-	public float[] times;
-	public float[] positions;
 }
