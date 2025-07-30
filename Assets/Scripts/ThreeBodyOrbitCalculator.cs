@@ -5,11 +5,6 @@ using System.Collections.Generic;
 
 #endregion
 
-public struct CalculationResult
-{
-	public float[] times;
-	public float[] positions;
-}
 
 public class ThreeBodyOrbitCalculator
 {
