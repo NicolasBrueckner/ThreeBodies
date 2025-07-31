@@ -1,19 +1,23 @@
 #region
 
+using System.Linq;
 using UnityEngine;
 
 #endregion
 
-public class PlanarThreeBodyController : MonoBehaviour
+public class ThreeBodyController : MonoBehaviour
 {
 	public OrbitInformationLoader loader;
 	public int sampleRate = 1;
 	public float scale = 1f;
+	public float playbackSpeed = 1f;
 	public GameObject[] bodies;
 	public LineRenderer[] lineRenderers;
 
 	private CalculationResult _currentResult;
-	private int _currentStep;
+	private float _simulationTime;
+	private float[] _times;
+	private float[] _positions;
 
 	private void Start()
 	{
@@ -39,18 +43,48 @@ public class PlanarThreeBodyController : MonoBehaviour
 		}
 
 		_currentResult = calculator.Simulate( y0, info.period, info.masses, sampleRate );
-		_currentStep = 0;
+		_times = _currentResult.times;
 
 		DrawLines(); //currently only for debugging
 	}
 
 	private void MoveBodies()
 	{
-		bodies[ 0 ].transform.position = _currentResult.GetPositionAtStep( _currentStep, 0 ) * scale;
-		bodies[ 1 ].transform.position = _currentResult.GetPositionAtStep( _currentStep, 1 ) * scale;
-		bodies[ 2 ].transform.position = _currentResult.GetPositionAtStep( _currentStep, 2 ) * scale;
+		_simulationTime = ( _simulationTime + Time.deltaTime * playbackSpeed ) % _times.Last();
 
-		_currentStep = ( _currentStep + 1 ) % _currentResult.times.Length;
+		int step = FindStepIndex( _simulationTime );
+
+		float t0 = _times[ step ];
+		float t1 = _times[ step + 1 ];
+		float alpha = Mathf.Approximately( t0, t1 ) ? 0f : Mathf.InverseLerp( t0, t1, _simulationTime );
+
+		for( int i = 0; i < 3; i++ )
+		{
+			Vector2 p0 = _currentResult.GetPositionAtStep( step, i );
+			Vector2 p1 = _currentResult.GetPositionAtStep( step + 1, i );
+
+			Vector2 interpolated = Vector2.Lerp( p0, p1, alpha );
+			bodies[ i ].transform.position = interpolated * scale;
+		}
+	}
+
+	private int FindStepIndex( float time )
+	{
+		int low = 0;
+		int high = _times.Length - 2;
+
+		while( low <= high )
+		{
+			int mid = ( low + high ) / 2;
+			if( _times[ mid ] <= time && time <= _times[ mid + 1 ] )
+				return mid;
+			if( time < _times[ mid ] )
+				high = mid - 1;
+			else
+				low = mid + 1;
+		}
+
+		return _times.Length - 2;
 	}
 
 	private void DrawLines()
