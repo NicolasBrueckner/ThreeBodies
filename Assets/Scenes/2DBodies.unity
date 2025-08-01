@@ -255,8 +255,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 0.3137255}
+      key1: {r: 1, g: 1, b: 1, a: 0.3137255}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -280,7 +280,7 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -881,7 +881,7 @@ VisualEffect:
       - m_Value: {x: 8, y: 8, z: 8, w: 0}
         m_Name: Color2
         m_Overridden: 1
-      - m_Value: {x: 0.1201258, y: 0.6473507, z: 1.4980392, w: 0}
+      - m_Value: {x: 1.4980392, y: 0.1809352, z: 0.12549017, w: 0}
         m_Name: Color
         m_Overridden: 1
     m_Uint:
@@ -908,8 +908,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.27613962, z: -0, w: 0.9611176}
   m_LocalPosition: {x: -1.2005767, y: 0.95314014, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 32.06, z: 0}
@@ -1771,8 +1771,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 0.3137255}
+      key1: {r: 1, g: 1, b: 1, a: 0.3137255}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -1796,7 +1796,7 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -2244,8 +2244,8 @@ RectTransform:
   m_GameObject: {fileID: 693044547}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.82, y: 0.82, z: 0.82}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 672972871}
   - {fileID: 843664113}
@@ -3135,8 +3135,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 0.3137255}
+      key1: {r: 1, g: 1, b: 1, a: 0.3137255}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -3160,7 +3160,7 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -4302,7 +4302,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loader: {fileID: 1270001263}
   sampleRate: 2
-  scale: 10
+  scale: 3
   playbackSpeed: 1
   bodies:
   - {fileID: 277133899}
@@ -4635,7 +4635,7 @@ VisualEffect:
       - m_Value: {x: 8, y: 8, z: 8, w: 0}
         m_Name: Color2
         m_Overridden: 1
-      - m_Value: {x: 0.1201258, y: 0.6473507, z: 1.4980392, w: 0}
+      - m_Value: {x: 0.2986515, y: 1.4980392, z: 0.12549017, w: 0}
         m_Name: Color
         m_Overridden: 1
     m_Uint:
@@ -4662,8 +4662,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.27613962, z: -0, w: 0.9611176}
   m_LocalPosition: {x: -0.34, y: 2.87, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 32.06, z: 0}
@@ -4767,7 +4767,7 @@ VisualEffect:
       - m_Value: {x: 8, y: 8, z: 8, w: 0}
         m_Name: Color2
         m_Overridden: 1
-      - m_Value: {x: 0.1201258, y: 0.6473507, z: 1.4980392, w: 0}
+      - m_Value: {x: 0.15686275, y: 0.65701675, z: 1.6425419, w: 0}
         m_Name: Color
         m_Overridden: 1
     m_Uint:
@@ -4794,8 +4794,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.27613962, z: -0, w: 0.9611176}
   m_LocalPosition: {x: -2.971, y: 0.699, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 32.06, z: 0}
@@ -6079,7 +6079,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}

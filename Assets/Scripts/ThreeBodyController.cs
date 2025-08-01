@@ -45,7 +45,7 @@ public class ThreeBodyController : MonoBehaviour
 		_currentResult = calculator.Simulate( y0, info.period, info.masses, sampleRate );
 		_times = _currentResult.times;
 
-		DrawLines(); //currently only for debugging
+		//DrawLines(); //currently only for debugging
 	}
 
 	private void MoveBodies()
