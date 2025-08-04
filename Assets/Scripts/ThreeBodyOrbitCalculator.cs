@@ -8,9 +8,10 @@ using System.Collections.Generic;
 
 public class ThreeBodyOrbitCalculator
 {
-	private double[] _masses;
+	public static CalculationResult CurrentResult;
+	private static double[] _masses;
 
-	private double[] Derivative( double[] yp, double[] y, double t )
+	private static double[] Derivative( double[] yp, double[] y, double t )
 	{
 		Array.Clear( yp, 0, yp.Length );
 
@@ -28,7 +29,7 @@ public class ThreeBodyOrbitCalculator
 		return yp;
 	}
 
-	private void ComputePair( double[] yp, double[] y, int iA, int iB, int viA, int viB, double mB, double mA )
+	private static void ComputePair( double[] yp, double[] y, int iA, int iB, int viA, int viB, double mB, double mA )
 	{
 		double dx = y[ iB ] - y[ iA ];
 		double dy = y[ iB + 1 ] - y[ iA + 1 ];
@@ -41,14 +42,14 @@ public class ThreeBodyOrbitCalculator
 		yp[ viB + 1 ] -= dy * mA;
 	}
 
-	public CalculationResult Simulate( double[] initialY, double tEnd, double[] masses, int sampleRate,
+	public static CalculationResult Simulate( double[] initialY, double tEnd, double[] masses, int sampleRate,
 		double tolerance = 1e-8 )
 	{
 		Ode45Solver.Options config = new() { tolerance = tolerance, tLimit = tEnd };
 		_masses = masses;
 
 		List<float> resultT = new();
-		List<float> resultPos = new();
+		List<float> resultP = new();
 		Ode45Solver.State state = new() { t = 0, dt = 1, y = ( double[] )initialY.Clone() };
 
 		StoreStep( state.t, state.y );
@@ -61,12 +62,14 @@ public class ThreeBodyOrbitCalculator
 				StoreStep( state.t, state.y );
 		}
 
-		return new CalculationResult { times = resultT.ToArray(), positions = resultPos.ToArray() };
+		CurrentResult = new() { times = resultT.ToArray(), positions = resultP.ToArray() };
+		RuntimeEventManager.InvokeOrbitCalculated( CurrentResult );
+		return CurrentResult;
 
 		void StoreStep( double t, double[] y )
 		{
 			resultT.Add( ( float )t );
-			resultPos.AddRange( new[]
+			resultP.AddRange( new[]
 			{
 				( float )y[ 0 ], ( float )y[ 1 ], // body 0
 				( float )y[ 4 ], ( float )y[ 5 ], // body 1

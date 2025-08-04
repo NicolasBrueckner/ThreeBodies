@@ -5,7 +5,7 @@ using UnityEngine;
 
 #endregion
 
-public struct CalculationResult
+public class CalculationResult
 {
 	public float[] times;
 	public float[] positions;

@@ -31,8 +31,6 @@ public class ThreeBodyController : MonoBehaviour
 
 	private void OnOrbitInfoLoaded( OrbitInformation info )
 	{
-		ThreeBodyOrbitCalculator calculator = new();
-
 		double[] y0 = new double[ 12 ];
 		for( int i = 0; i < 3; i++ )
 		{
@@ -42,7 +40,7 @@ public class ThreeBodyController : MonoBehaviour
 			y0[ i * 4 + 3 ] = info.initialVelocities[ i ].y;
 		}
 
-		_currentResult = calculator.Simulate( y0, info.period, info.masses, sampleRate );
+		_currentResult = ThreeBodyOrbitCalculator.Simulate( y0, info.period, info.masses, sampleRate );
 		_times = _currentResult.times;
 
 		//DrawLines(); //currently only for debugging
