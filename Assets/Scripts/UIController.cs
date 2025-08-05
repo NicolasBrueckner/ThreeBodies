@@ -38,7 +38,7 @@ public class UIController : MonoBehaviour
 		sequenceDropdown.ClearOptions();
 		sequenceDropdown.AddOptions( sequences.sequences );
 
-		OnSequenceChanged( 11 );
+		sequenceDropdown.value = 11;
 	}
 
 	private void OnInfoLoaded( OrbitInformation obj )

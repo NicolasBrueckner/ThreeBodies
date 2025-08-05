@@ -8,6 +8,7 @@ using UnityEngine;
 [ RequireComponent( typeof( Camera ) ) ]
 public class CameraController : MonoBehaviour
 {
+	public float scale = 1f;
 	private Camera _cam;
 
 	private void Start()
@@ -19,6 +20,6 @@ public class CameraController : MonoBehaviour
 	private void OnOrbitCalculated( CalculationResult result )
 	{
 		float maxValue = result.positions.AsParallel().Max();
-		_cam.orthographicSize = maxValue;
+		_cam.orthographicSize = maxValue * scale;
 	}
 }
