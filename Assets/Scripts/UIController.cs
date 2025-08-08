@@ -1,20 +1,28 @@
 #region
 
+using System;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Button = UnityEngine.UI.Button;
 
 #endregion
 
 public class UIController : MonoBehaviour
 {
 	public OrbitInformationLoader loader;
+	public SequenceList sequences;
+
+	public TMP_Text fpsDebug;
+
+	[ Header( "Interactive UI Elements" ) ]
 	public TMP_Dropdown orbitDropdown;
+
 	public TMP_Dropdown sequenceDropdown;
 	public Button settingButton;
 	public Button hideButton;
-	public SequenceList sequences;
+	public Slider trailSlider;
 
 	[ Header( "Information Labels" ) ]
 	public TMP_Text positionLabel;
@@ -26,19 +34,33 @@ public class UIController : MonoBehaviour
 	public TMP_Text energyLabel;
 	public TMP_Text dateLabel;
 
-
-	private void Start()
+	private void Awake()
 	{
 		RuntimeEventManager.FileLoaded += OnFileLoaded;
 		RuntimeEventManager.OrbitInfoLoaded += OnInfoLoaded;
+	}
 
+	private void Start()
+	{
 		sequenceDropdown.onValueChanged.AddListener( OnSequenceChanged );
 		orbitDropdown.onValueChanged.AddListener( OnOrbitChanged );
+		trailSlider.onValueChanged.AddListener( OnTrailChanged );
 
 		sequenceDropdown.ClearOptions();
 		sequenceDropdown.AddOptions( sequences.sequences );
-
 		sequenceDropdown.value = 11;
+
+		trailSlider.value = trailSlider.maxValue / 3;
+	}
+
+	private void Update()
+	{
+		fpsDebug.text = $"FPS: {Math.Round( 1f / Time.unscaledDeltaTime )}";
+	}
+
+	private void OnTrailChanged( float arg0 )
+	{
+		RuntimeEventManager.InvokeTrailSliderValueChanged( arg0 );
 	}
 
 	private void OnInfoLoaded( OrbitInformation obj )

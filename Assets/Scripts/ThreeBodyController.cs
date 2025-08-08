@@ -7,7 +7,6 @@ using UnityEngine;
 
 public class ThreeBodyController : MonoBehaviour
 {
-	public OrbitInformationLoader loader;
 	public int sampleRate = 1;
 	public float scale = 1f;
 	public float playbackSpeed = 1f;
@@ -51,6 +50,7 @@ public class ThreeBodyController : MonoBehaviour
 		_simulationTime = ( _simulationTime + Time.deltaTime * playbackSpeed ) % _times.Last();
 
 		int step = FindStepIndex( _simulationTime );
+		RuntimeEventManager.InvokeStepUpdated( step );
 
 		float t0 = _times[ step ];
 		float t1 = _times[ step + 1 ];
