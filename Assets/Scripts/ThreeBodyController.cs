@@ -11,16 +11,20 @@ public class ThreeBodyController : MonoBehaviour
 	public float scale = 1f;
 	public float playbackSpeed = 1f;
 	public GameObject[] bodies;
-	public LineRenderer[] lineRenderers;
 
 	private CalculationResult _currentResult;
 	private float _simulationTime;
 	private float[] _times;
 	private float[] _positions;
 
-	private void Start()
+	private void Awake()
 	{
 		RuntimeEventManager.OrbitInfoLoaded += OnOrbitInfoLoaded;
+	}
+
+	private void OnDestroy()
+	{
+		RuntimeEventManager.OrbitInfoLoaded -= OnOrbitInfoLoaded;
 	}
 
 	private void FixedUpdate()
@@ -41,8 +45,6 @@ public class ThreeBodyController : MonoBehaviour
 
 		_currentResult = ThreeBodyOrbitCalculator.Simulate( y0, info.period, info.masses, sampleRate );
 		_times = _currentResult.times;
-
-		//DrawLines(); //currently only for debugging
 	}
 
 	private void MoveBodies()
@@ -83,26 +85,5 @@ public class ThreeBodyController : MonoBehaviour
 		}
 
 		return _times.Length - 2;
-	}
-
-	private void DrawLines()
-	{
-		int totalFrames = _currentResult.positions.Length / 6;
-		lineRenderers[ 0 ].positionCount = totalFrames;
-		lineRenderers[ 1 ].positionCount = totalFrames;
-		lineRenderers[ 2 ].positionCount = totalFrames;
-
-		for( int i = 0; i < totalFrames; i++ )
-		{
-			int baseIndex = i * 6;
-
-			for( int j = 0; j < 3; j++ )
-			{
-				int index = baseIndex + j * 2;
-				float x = _currentResult.positions[ index ];
-				float y = _currentResult.positions[ index + 1 ];
-				lineRenderers[ j ].SetPosition( i, new Vector3( x, y, 0 ) * scale );
-			}
-		}
 	}
 }

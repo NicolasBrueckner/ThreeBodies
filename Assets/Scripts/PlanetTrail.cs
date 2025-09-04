@@ -1,5 +1,7 @@
 #region
 
+using System;
+using System.Linq;
 using UnityEngine;
 
 #endregion
@@ -7,60 +9,104 @@ using UnityEngine;
 [ RequireComponent( typeof( LineRenderer ) ) ]
 public class PlanetTrail : MonoBehaviour
 {
-	public static float LineWidth = 0.2f;
+	public static float TrailWidth = 0.15f;
+	public static float LineWidth = 0.01f;
 
-
+	[ Header( "Config" ) ]
 	public int bodyIndex;
 
-	private CalculationResult _currentResult;
-	private LineRenderer _lineRenderer;
-	private int _currentStep;
-	private int _totalSteps;
+
+	private enum Mode
+	{
+		None,
+		Trail,
+		Orbit,
+	}
+
+	private Mode _mode;
+	private const float _orbitStart = 0.98f;
+
+	private TrailRenderer _trail;
+	private LineRenderer _line;
+	private float _orbitTime;
+	private float _sliderValue;
+
+	private Vector3[] _positions;
 
 	private void Awake()
 	{
+		_trail = GetComponent<TrailRenderer>();
+		_line = GetComponent<LineRenderer>();
+
+		_trail.widthMultiplier = TrailWidth;
+		_line.widthMultiplier = LineWidth;
+
 		RuntimeEventManager.OrbitCalculated += OnOrbitCalculated;
 		RuntimeEventManager.TrailSliderValueChanged += OnTrailSliderChanged;
-		RuntimeEventManager.StepUpdated += OnStepUpdated;
 	}
 
-	private void Start()
+	private void OnDestroy()
 	{
-		_lineRenderer = GetComponent<LineRenderer>();
-		_lineRenderer.widthMultiplier = LineWidth;
+		RuntimeEventManager.OrbitCalculated -= OnOrbitCalculated;
+		RuntimeEventManager.TrailSliderValueChanged -= OnTrailSliderChanged;
 	}
 
-	private void Update()
+	private void OnOrbitCalculated( CalculationResult result )
 	{
-		//if( _lineRenderer.positionCount < 0.9f * _totalSteps )
-		UpdateTrail();
-		/*else
+		_orbitTime = result.times.Last();
+
+		_trail.Clear();
+		_trail.enabled = false;
+		_trail.time = 0;
+
+		_trail.transform.position += Vector3.one * Mathf.Epsilon;
+
+		_trail.enabled = true;
+		_trail.time = _orbitTime;
+
+		_line.positionCount = result.times.Length;
+		_line.SetPositions( result.GetPositionsOfBody( bodyIndex ) );
+	}
+
+	private void OnTrailSliderChanged( float value )
+	{
+		_sliderValue = Mathf.Clamp01( value );
+
+		if( _mode == Mode.Trail )
+			_trail.time = _orbitTime * _sliderValue;
+
+		switch( value )
 		{
-
-		}*/
-	}
-
-	private void UpdateTrail()
-	{
-		int length = _lineRenderer.positionCount;
-
-		for( int i = 0; i < length; i++ )
-		{
-			int index = _currentStep - i < 0
-				            ? _totalSteps - 1 + ( _currentStep - i )
-				            : _currentStep - i;
-			_lineRenderer.SetPosition( i, _currentResult.GetPositionAtStep( index, bodyIndex ) );
+			case < _orbitStart:
+				SetMode( Mode.Trail );
+				break;
+			case >= _orbitStart:
+				SetMode( Mode.Orbit );
+				break;
 		}
 	}
 
-	private void OnOrbitCalculated( CalculationResult obj )
+	private void SetMode( Mode mode )
 	{
-		_currentResult = obj;
-		_totalSteps = _currentResult.times.Length;
+		if( mode == _mode )
+			return;
+
+		_mode = mode;
+
+		switch( mode )
+		{
+			case Mode.Trail:
+				_trail.widthMultiplier = TrailWidth;
+				_line.widthMultiplier = 0;
+				break;
+			case Mode.Orbit:
+				_trail.widthMultiplier = 0;
+				_line.widthMultiplier = LineWidth;
+				break;
+			case Mode.None:
+				break;
+			default:
+				throw new ArgumentOutOfRangeException( nameof( mode ), mode, null );
+		}
 	}
-
-	private void OnStepUpdated( int value ) => _currentStep = value;
-
-	private void OnTrailSliderChanged( float value ) =>
-		_lineRenderer.positionCount = ( int )( _totalSteps * value );
 }

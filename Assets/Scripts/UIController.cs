@@ -44,7 +44,7 @@ public class UIController : MonoBehaviour
 	{
 		sequenceDropdown.onValueChanged.AddListener( OnSequenceChanged );
 		orbitDropdown.onValueChanged.AddListener( OnOrbitChanged );
-		trailSlider.onValueChanged.AddListener( OnTrailChanged );
+		trailSlider.onValueChanged.AddListener( OnSliderChanged );
 
 		sequenceDropdown.ClearOptions();
 		sequenceDropdown.AddOptions( sequences.sequences );
@@ -58,7 +58,7 @@ public class UIController : MonoBehaviour
 		fpsDebug.text = $"FPS: {Math.Round( 1f / Time.unscaledDeltaTime )}";
 	}
 
-	private void OnTrailChanged( float arg0 )
+	private static void OnSliderChanged( float arg0 )
 	{
 		RuntimeEventManager.InvokeTrailSliderValueChanged( arg0 );
 	}
