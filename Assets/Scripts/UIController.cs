@@ -22,7 +22,7 @@ public class UIController : MonoBehaviour
 	public TMP_Dropdown sequenceDropdown;
 	public Button settingButton;
 	public Button hideButton;
-	public Slider trailSlider;
+	public Toggle orbitToggle;
 
 	[ Header( "Information Labels" ) ]
 	public TMP_Text positionLabel;
@@ -44,13 +44,13 @@ public class UIController : MonoBehaviour
 	{
 		sequenceDropdown.onValueChanged.AddListener( OnSequenceChanged );
 		orbitDropdown.onValueChanged.AddListener( OnOrbitChanged );
-		trailSlider.onValueChanged.AddListener( OnSliderChanged );
+		orbitToggle.onValueChanged.AddListener( OnToggleChanged );
 
 		sequenceDropdown.ClearOptions();
 		sequenceDropdown.AddOptions( sequences.sequences );
 		sequenceDropdown.value = 11;
 
-		trailSlider.value = trailSlider.maxValue / 3;
+		orbitToggle.isOn = false;
 	}
 
 	private void Update()
@@ -58,9 +58,9 @@ public class UIController : MonoBehaviour
 		fpsDebug.text = $"FPS: {Math.Round( 1f / Time.unscaledDeltaTime )}";
 	}
 
-	private static void OnSliderChanged( float arg0 )
+	private static void OnToggleChanged( bool isOn )
 	{
-		RuntimeEventManager.InvokeTrailSliderValueChanged( arg0 );
+		RuntimeEventManager.InvokeOrbitToggleChanged( isOn );
 	}
 
 	private void OnInfoLoaded( OrbitInformation obj )
