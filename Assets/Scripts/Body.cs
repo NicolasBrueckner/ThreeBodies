@@ -1,68 +1,51 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+#region
+
 using UnityEngine;
-using UnityEngine.Serialization;
 
-public class Body : MonoBehaviour
+#endregion
+
+public class PlanetController : MonoBehaviour
 {
-	[Range(1f, 100f)]
-	public float g = 1f;
-	
-	public bool randomizeInitialVelocity;
-	public Vector3 initialVelocity;
-	
-	private Rigidbody _rb; 
-	private static readonly List<Body> Bodies=new();
-	
-	public List<Body> exposedBodies;
+	public int bodyIndex;
+	public Color planetColor;
 
-	private void OnEnable()
-	{
-		Bodies.Add(this);
-	}
-
-	private void OnDisable()
-	{
-		Bodies.Remove( this );
-	}
+	private Gradient _trailGradient;
+	private LineRenderer _orbitRenderer;
 
 	private void Start()
 	{
-		exposedBodies = Bodies;
-		
-		_rb = GetComponent<Rigidbody>();
-		if( randomizeInitialVelocity )
+		RuntimeEventManager.OrbitCalculated += OnOrbitCalculated;
+		RuntimeEventManager.OrbitToggleChanged += OnOrbitToggleChanged;
+
+		MeshRenderer planetRenderer = GetComponent<MeshRenderer>();
+		TrailRenderer trailRenderer = GetComponent<TrailRenderer>();
+		_orbitRenderer = GetComponent<LineRenderer>();
+
+		planetRenderer.material.color = planetColor;
+		trailRenderer.colorGradient = InitializeGradient( planetColor, a2: 0.0f );
+		_orbitRenderer.colorGradient = InitializeGradient( planetColor );
+	}
+
+	private void OnOrbitToggleChanged( bool value )
+	{
+		_orbitRenderer.enabled = value;
+	}
+
+	private void OnOrbitCalculated( CalculationResult obj )
+	{
+		_orbitRenderer.positionCount = obj.times.Length;
+		_orbitRenderer.SetPositions( obj.GetPositionsOfBody( bodyIndex ) );
+	}
+
+	private static Gradient InitializeGradient( Color c1, Color? c2 = null, float a1 = 1f, float? a2 = null )
+	{
+		Color finalC2 = c2 ?? c1;
+		float finalA2 = a2 ?? a1;
+
+		return new Gradient
 		{
-			Vector3 force = GetRandomStartingVelocity();
-			_rb.AddForce( force, ForceMode.Impulse );
-		}
-		else
-			_rb.AddForce( initialVelocity, ForceMode.Impulse );
-	}
-
-	
-	private void FixedUpdate()
-	{
-		foreach( Body body in Bodies.Where( body => body != this ) )
-		{
-			Vector3 force = GetForceFromBody( body );
-			_rb.AddForce( force, ForceMode.Force );
-		}
-	}
-
-	
-	private Vector3 GetRandomStartingVelocity()
-	{
-		Vector2 direction = UnityEngine.Random.insideUnitSphere;
-		return new( direction.x, 0, direction.y );
-	}
-
-	private Vector3 GetForceFromBody( Body body )
-	{
-		Vector3 direction = body.transform.position - transform.position;
-		float distanceSquared = direction.sqrMagnitude + 0.01f;
-		float forceMagnitude = g * _rb.mass * body._rb.mass / distanceSquared;
-		return direction.normalized * forceMagnitude;
+			colorKeys = new[] { new GradientColorKey( c1, 0.0f ), new GradientColorKey( finalC2, 1.0f ) },
+			alphaKeys = new[] { new GradientAlphaKey( a1, 0.0f ), new GradientAlphaKey( finalA2, 1.0f ) },
+		};
 	}
 }
