@@ -1,5 +1,6 @@
 #region
 
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -10,16 +11,20 @@ public class ThreeBodyController : MonoBehaviour
 	public int sampleRate = 1;
 	public float scale = 1f;
 	public float playbackSpeed = 1f;
-	public GameObject[] bodies;
+	public GameObject bodyPrefab;
+	public Color[] bodyColors = new Color[ 3 ];
 
 	private CalculationResult _currentResult;
 	private float _simulationTime;
 	private float[] _times;
 	private float[] _positions;
+	private readonly Dictionary<Transform, Body> _bodies = new();
 
 	private void Awake()
 	{
 		RuntimeEventManager.OrbitInfoLoaded += OnOrbitInfoLoaded;
+
+		InstantiateBodies();
 	}
 
 	private void OnDestroy()
@@ -30,6 +35,18 @@ public class ThreeBodyController : MonoBehaviour
 	private void FixedUpdate()
 	{
 		MoveBodies();
+	}
+
+	private void InstantiateBodies()
+	{
+		for( int i = 0; i < 3; i++ )
+		{
+			GameObject bodyObject = Instantiate( bodyPrefab, transform );
+			Body body = bodyObject.GetComponent<Body>();
+			_bodies.Add( bodyObject.transform, body );
+			body.bodyIndex = i;
+			body.planetColor = bodyColors[ i ];
+		}
 	}
 
 	private void OnOrbitInfoLoaded( OrbitInformation info )
@@ -58,14 +75,51 @@ public class ThreeBodyController : MonoBehaviour
 		float t1 = _times[ step + 1 ];
 		float alpha = Mathf.Approximately( t0, t1 ) ? 0f : Mathf.InverseLerp( t0, t1, _simulationTime );
 
-		for( int i = 0; i < 3; i++ )
+		int i = 0;
+		foreach( Transform t in _bodies.Keys )
 		{
 			Vector2 p0 = _currentResult.GetPositionAtStep( step, i );
 			Vector2 p1 = _currentResult.GetPositionAtStep( step + 1, i );
 
 			Vector2 interpolated = Vector2.Lerp( p0, p1, alpha );
-			bodies[ i ].transform.position = interpolated * scale;
+			t.position = interpolated * scale;
+			i++;
 		}
+
+		CheckBodyDistances();
+	}
+
+	private void CheckBodyDistances()
+	{
+		const float maxDist = 0.2f;
+		float sqrDist = float.MaxValue;
+		Transform closestA = null;
+		Transform closestB = null;
+
+		foreach( Transform i in _bodies.Keys )
+		{
+			foreach( Transform j in _bodies.Keys )
+			{
+				if( _bodies[ i ] == _bodies[ j ] )
+					continue;
+
+				float current = Vector3.SqrMagnitude( i.position - j.position );
+
+				if( current >= sqrDist )
+					continue;
+
+				sqrDist = current;
+				closestA = i;
+				closestB = j;
+			}
+		}
+
+		if( !( sqrDist <= maxDist * maxDist ) )
+			return;
+
+		float distance = Vector2.Distance( closestA.position, closestB.position );
+		_bodies[ closestA ].ChangeSize( maxDist, distance );
+		_bodies[ closestB ].ChangeSize( maxDist, distance );
 	}
 
 	private int FindStepIndex( float time )

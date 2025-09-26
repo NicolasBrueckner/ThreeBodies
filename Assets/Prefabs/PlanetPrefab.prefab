@@ -326,6 +326,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 486a6bc801a7615419b8541e1e5a96ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bodyIndex: 0
   planetColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &6140458413021921197
 MonoBehaviour:
@@ -339,7 +340,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 304d6401ddc5fda478b1cdb9159850af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationSpeedRange: {x: 0, y: 0}
+  rotationSpeedRange: {x: 0.5, y: 3}
 --- !u!1 &6219713728449883942
 GameObject:
   m_ObjectHideFlags: 0

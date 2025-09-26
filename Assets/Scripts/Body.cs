@@ -4,13 +4,17 @@ using UnityEngine;
 
 #endregion
 
-public class PlanetController : MonoBehaviour
+public class Body : MonoBehaviour
 {
 	public int bodyIndex;
 	public Color planetColor;
 
 	private Gradient _trailGradient;
+	private Transform _cachedTransform;
 	private LineRenderer _orbitRenderer;
+
+	private static readonly float _uniformMaxScale = 5.0f;
+	private static readonly float _uniformMinScale = 0.1f;
 
 	private void Start()
 	{
@@ -19,11 +23,18 @@ public class PlanetController : MonoBehaviour
 
 		MeshRenderer planetRenderer = GetComponent<MeshRenderer>();
 		TrailRenderer trailRenderer = GetComponent<TrailRenderer>();
+		_cachedTransform = transform;
 		_orbitRenderer = GetComponent<LineRenderer>();
 
 		planetRenderer.material.color = planetColor;
 		trailRenderer.colorGradient = InitializeGradient( planetColor, a2: 0.0f );
 		_orbitRenderer.colorGradient = InitializeGradient( planetColor );
+	}
+
+	private void OnDestroy()
+	{
+		RuntimeEventManager.OrbitCalculated -= OnOrbitCalculated;
+		RuntimeEventManager.OrbitToggleChanged -= OnOrbitToggleChanged;
 	}
 
 	private void OnOrbitToggleChanged( bool value )
@@ -47,5 +58,15 @@ public class PlanetController : MonoBehaviour
 			colorKeys = new[] { new GradientColorKey( c1, 0.0f ), new GradientColorKey( finalC2, 1.0f ) },
 			alphaKeys = new[] { new GradientAlphaKey( a1, 0.0f ), new GradientAlphaKey( finalA2, 1.0f ) },
 		};
+	}
+
+	public void ChangeSize( float max, float alpha )
+	{
+		float inverseAlpha = Mathf.InverseLerp( 0.0f, max, alpha );
+		float newScale = Mathf.Lerp( _uniformMinScale, _uniformMaxScale, inverseAlpha );
+		Debug.Log(
+			$"Change size of body: {bodyIndex} / max: {max} / alpha: {alpha} / inverse alpha: {inverseAlpha} / newScale: {newScale}" );
+
+		_cachedTransform.localScale = Vector3.one * newScale;
 	}
 }
