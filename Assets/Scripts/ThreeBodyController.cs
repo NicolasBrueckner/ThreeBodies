@@ -114,6 +114,13 @@ public class ThreeBodyController : MonoBehaviour
 			}
 		}
 
+		if( sqrDist is > maxDist * maxDist and < maxDist )
+		{
+			_bodies[ closestA ].ChangeSize( 1, 1 );
+			_bodies[ closestB ].ChangeSize( 1, 1 );
+			return;
+		}
+
 		if( !( sqrDist <= maxDist * maxDist ) )
 			return;
 

@@ -64,8 +64,6 @@ public class Body : MonoBehaviour
 	{
 		float inverseAlpha = Mathf.InverseLerp( 0.0f, max, alpha );
 		float newScale = Mathf.Lerp( _uniformMinScale, _uniformMaxScale, inverseAlpha );
-		Debug.Log(
-			$"Change size of body: {bodyIndex} / max: {max} / alpha: {alpha} / inverse alpha: {inverseAlpha} / newScale: {newScale}" );
 
 		_cachedTransform.localScale = Vector3.one * newScale;
 	}

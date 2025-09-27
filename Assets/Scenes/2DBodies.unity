@@ -3877,9 +3877,9 @@ MonoBehaviour:
   playbackSpeed: 1
   bodyPrefab: {fileID: 40059241601845256, guid: f1d5e1718d2edc544822072143d499f3, type: 3}
   bodyColors:
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0, g: 1, b: 0.085725546, a: 1}
-  - {r: 0, g: 0.06287718, b: 1, a: 1}
+  - {r: 0.6509434, g: 0.21186365, b: 0.21186365, a: 1}
+  - {r: 0.20572266, g: 0.6320754, b: 0.24250609, a: 1}
+  - {r: 0.21168563, g: 0.24043077, b: 0.6698113, a: 1}
 --- !u!114 &1270001263
 MonoBehaviour:
   m_ObjectHideFlags: 0
