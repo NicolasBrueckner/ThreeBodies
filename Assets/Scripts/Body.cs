@@ -1,5 +1,6 @@
 #region
 
+using System.Collections;
 using UnityEngine;
 
 #endregion
@@ -12,6 +13,7 @@ public class Body : MonoBehaviour
 	private Gradient _trailGradient;
 	private Transform _cachedTransform;
 	private LineRenderer _orbitRenderer;
+	private TrailRenderer _trailRenderer;
 
 	private static readonly float _uniformMaxScale = 5.0f;
 	private static readonly float _uniformMinScale = 0.1f;
@@ -19,15 +21,16 @@ public class Body : MonoBehaviour
 	private void Start()
 	{
 		RuntimeEventManager.OrbitCalculated += OnOrbitCalculated;
+		RuntimeEventManager.OrbitInfoLoaded += OnOrbitInfoLoaded;
 		RuntimeEventManager.OrbitToggleChanged += OnOrbitToggleChanged;
 
 		MeshRenderer planetRenderer = GetComponent<MeshRenderer>();
-		TrailRenderer trailRenderer = GetComponent<TrailRenderer>();
+		_trailRenderer = GetComponent<TrailRenderer>();
 		_cachedTransform = transform;
 		_orbitRenderer = GetComponent<LineRenderer>();
 
 		planetRenderer.material.color = planetColor;
-		trailRenderer.colorGradient = InitializeGradient( planetColor, a2: 0.0f );
+		_trailRenderer.colorGradient = InitializeGradient( planetColor, a2: 0.0f );
 		_orbitRenderer.colorGradient = InitializeGradient( planetColor );
 	}
 
@@ -46,6 +49,19 @@ public class Body : MonoBehaviour
 	{
 		_orbitRenderer.positionCount = obj.times.Length;
 		_orbitRenderer.SetPositions( obj.GetPositionsOfBody( bodyIndex ) );
+	}
+
+	private void OnOrbitInfoLoaded( OrbitInformation obj )
+	{
+		StartCoroutine( ResetTrail() );
+	}
+
+	private IEnumerator ResetTrail()
+	{
+		_trailRenderer.enabled = false;
+		yield return new WaitForEndOfFrame();
+		_trailRenderer.Clear();
+		_trailRenderer.enabled = true;
 	}
 
 	private static Gradient InitializeGradient( Color c1, Color? c2 = null, float a1 = 1f, float? a2 = null )

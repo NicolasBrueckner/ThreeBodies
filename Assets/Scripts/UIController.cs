@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Collections;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -21,7 +22,10 @@ public class UIController : MonoBehaviour
 
 	public TMP_Dropdown sequenceDropdown;
 	public Button settingButton;
+	public RectTransform informationContainer;
+	public RectTransform settingsContainer;
 	public Button hideButton;
+	public Button quitButton;
 	public Toggle orbitToggle;
 
 	[ Header( "Information Labels" ) ]
@@ -34,10 +38,25 @@ public class UIController : MonoBehaviour
 	public TMP_Text energyLabel;
 	public TMP_Text dateLabel;
 
+	private readonly Vector2 _sidebarHiddenPosition = new( -170, 0 );
+	private readonly Vector2 _sidebarVisiblePosition = new( 0, 0 );
+	private readonly Vector2 _settingsHiddenSize = new( 0, -700 );
+	private readonly Vector2 _settingsVisibleSize = new( 0, 0 );
+	private bool _isSidebarVisible;
+	private bool _isSettingsVisible;
+	private Coroutine _sidebarAnimation;
+	private Coroutine _settingsAnimation;
+
 	private void Awake()
 	{
 		RuntimeEventManager.FileLoaded += OnFileLoaded;
 		RuntimeEventManager.OrbitInfoLoaded += OnInfoLoaded;
+	}
+
+	private void OnDestroy()
+	{
+		RuntimeEventManager.FileLoaded -= OnFileLoaded;
+		RuntimeEventManager.OrbitInfoLoaded -= OnInfoLoaded;
 	}
 
 	private void Start()
@@ -45,12 +64,56 @@ public class UIController : MonoBehaviour
 		sequenceDropdown.onValueChanged.AddListener( OnSequenceChanged );
 		orbitDropdown.onValueChanged.AddListener( OnOrbitChanged );
 		orbitToggle.onValueChanged.AddListener( OnToggleChanged );
+		hideButton.onClick.AddListener( OnHideButtonClicked );
+		settingButton.onClick.AddListener( OnSettingButtonClicked );
+		quitButton.onClick.AddListener( Application.Quit );
 
 		sequenceDropdown.ClearOptions();
 		sequenceDropdown.AddOptions( sequences.sequences );
 		sequenceDropdown.value = 11;
 
 		orbitToggle.isOn = false;
+	}
+
+	private void OnSettingButtonClicked()
+	{
+		if( _settingsAnimation != null )
+			StopCoroutine( _settingsAnimation );
+
+		_settingsAnimation =
+			StartCoroutine( FlyInAnimation(
+				settingsContainer,
+				_isSettingsVisible ? _settingsHiddenSize : _settingsVisibleSize,
+				0.15f ) );
+		_isSettingsVisible = !_isSettingsVisible;
+	}
+
+	private void OnHideButtonClicked()
+	{
+		if( _sidebarAnimation != null )
+			StopCoroutine( _sidebarAnimation );
+
+		_sidebarAnimation =
+			StartCoroutine( FlyInAnimation(
+				informationContainer,
+				_isSidebarVisible ? _sidebarHiddenPosition : _sidebarVisiblePosition,
+				0.25f ) );
+		_isSidebarVisible = !_isSidebarVisible;
+	}
+
+	private static IEnumerator FlyInAnimation( RectTransform targetTransform, Vector2 targetPosition, float duration )
+	{
+		Vector2 startPosition = targetTransform.anchoredPosition;
+		float t = 0.0f;
+
+		while( t < duration )
+		{
+			targetTransform.anchoredPosition = Vector2.Lerp( startPosition, targetPosition, t / duration );
+			t += Time.unscaledDeltaTime;
+			yield return null;
+		}
+
+		targetTransform.anchoredPosition = targetPosition;
 	}
 
 	private void Update()
