@@ -53,5 +53,6 @@ public class CameraController : MonoBehaviour
 		float horizontalSize = size.x * 0.5f / aspect;
 
 		_cam.orthographicSize = Mathf.Max( verticalSize, horizontalSize ) * scale;
+		RuntimeEventManager.InvokeCameraOrthographicSizeChanged( _cam.orthographicSize );
 	}
 }
