@@ -9,20 +9,22 @@ public class Body : MonoBehaviour
 {
 	public int bodyIndex;
 	public Color planetColor;
+	public int lineRendererPixelWidth;
 
 	private Gradient _trailGradient;
 	private Transform _cachedTransform;
 	private LineRenderer _orbitRenderer;
 	private TrailRenderer _trailRenderer;
 
-	private static readonly float _uniformMaxScale = 5.0f;
-	private static readonly float _uniformMinScale = 0.1f;
+	private const float UniformMaxScale = 5.0f;
+	private const float UniformMinScale = 0.1f;
 
 	private void Start()
 	{
 		RuntimeEventManager.OrbitCalculated += OnOrbitCalculated;
 		RuntimeEventManager.OrbitInfoLoaded += OnOrbitInfoLoaded;
 		RuntimeEventManager.OrbitToggleChanged += OnOrbitToggleChanged;
+		RuntimeEventManager.CameraOrthographicSizeChanged += OnCameraOrthographicSizeChanged;
 
 		MeshRenderer planetRenderer = GetComponent<MeshRenderer>();
 		_trailRenderer = GetComponent<TrailRenderer>();
@@ -38,6 +40,8 @@ public class Body : MonoBehaviour
 	{
 		RuntimeEventManager.OrbitCalculated -= OnOrbitCalculated;
 		RuntimeEventManager.OrbitToggleChanged -= OnOrbitToggleChanged;
+		RuntimeEventManager.OrbitToggleChanged -= OnOrbitToggleChanged;
+		RuntimeEventManager.CameraOrthographicSizeChanged -= OnCameraOrthographicSizeChanged;
 	}
 
 	private void OnOrbitToggleChanged( bool value )
@@ -54,6 +58,14 @@ public class Body : MonoBehaviour
 	private void OnOrbitInfoLoaded( OrbitInformation obj )
 	{
 		StartCoroutine( ResetTrail() );
+	}
+
+	private void OnCameraOrthographicSizeChanged( float value )
+	{
+		float pixelPerUnit = Screen.height / ( value * 2f );
+		float worldUnitWidth = lineRendererPixelWidth / pixelPerUnit;
+
+		_orbitRenderer.widthMultiplier = worldUnitWidth;
 	}
 
 	private IEnumerator ResetTrail()
@@ -79,7 +91,7 @@ public class Body : MonoBehaviour
 	public void ChangeSize( float max, float alpha )
 	{
 		float inverseAlpha = Mathf.InverseLerp( 0.0f, max, alpha );
-		float newScale = Mathf.Lerp( _uniformMinScale, _uniformMaxScale, inverseAlpha );
+		float newScale = Mathf.Lerp( UniformMinScale, UniformMaxScale, inverseAlpha );
 
 		_cachedTransform.localScale = Vector3.one * newScale;
 	}

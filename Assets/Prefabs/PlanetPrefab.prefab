@@ -328,6 +328,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bodyIndex: 0
   planetColor: {r: 1, g: 1, b: 1, a: 1}
+  lineRendererPixelWidth: 2
 --- !u!114 &6140458413021921197
 MonoBehaviour:
   m_ObjectHideFlags: 0

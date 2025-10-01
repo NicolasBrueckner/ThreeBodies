@@ -10,27 +10,27 @@ using UnityEngine.UI;
 [ RequireComponent( typeof( ScrollRect ) ) ]
 public class ScrollRectAutoScroll : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-	private readonly List<Selectable> m_Selectables = new();
-	private ScrollRect m_ScrollRect;
-	private bool mouseOver;
+	private readonly List<Selectable> _selectables = new();
+	private ScrollRect _scrollRect;
+	private bool _mouseOver;
 
-	private Vector2 m_NextScrollPosition = Vector2.up;
+	private Vector2 _nextScrollPosition = Vector2.up;
 
 	public void OnEnable()
 	{
-		if( m_ScrollRect )
-			m_ScrollRect.content.GetComponentsInChildren( m_Selectables );
+		if( _scrollRect )
+			_scrollRect.content.GetComponentsInChildren( _selectables );
 	}
 
 	private void Awake()
 	{
-		m_ScrollRect = GetComponent<ScrollRect>();
+		_scrollRect = GetComponent<ScrollRect>();
 	}
 
 	private void Start()
 	{
-		if( m_ScrollRect )
-			m_ScrollRect.content.GetComponentsInChildren( m_Selectables );
+		if( _scrollRect )
+			_scrollRect.content.GetComponentsInChildren( _selectables );
 		ScrollToSelected( true );
 	}
 
@@ -42,31 +42,31 @@ public class ScrollRectAutoScroll : MonoBehaviour, IPointerEnterHandler, IPointe
 			                             : null;
 
 		if( selectedElement )
-			selectedIndex = m_Selectables.IndexOf( selectedElement );
+			selectedIndex = _selectables.IndexOf( selectedElement );
 
 		if( selectedIndex <= -1 )
 			return;
 
 		if( quickScroll )
 		{
-			m_ScrollRect.normalizedPosition =
-				new Vector2( 0, 1 - selectedIndex / ( ( float )m_Selectables.Count - 1 ) );
-			m_NextScrollPosition = m_ScrollRect.normalizedPosition;
+			_scrollRect.normalizedPosition =
+				new Vector2( 0, 1 - selectedIndex / ( ( float )_selectables.Count - 1 ) );
+			_nextScrollPosition = _scrollRect.normalizedPosition;
 		}
 		else
 		{
-			m_NextScrollPosition = new Vector2( 0, 1 - selectedIndex / ( ( float )m_Selectables.Count - 1 ) );
+			_nextScrollPosition = new Vector2( 0, 1 - selectedIndex / ( ( float )_selectables.Count - 1 ) );
 		}
 	}
 
 	public void OnPointerEnter( PointerEventData eventData )
 	{
-		mouseOver = true;
+		_mouseOver = true;
 	}
 
 	public void OnPointerExit( PointerEventData eventData )
 	{
-		mouseOver = false;
+		_mouseOver = false;
 		ScrollToSelected( false );
 	}
 }
